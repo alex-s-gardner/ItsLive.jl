@@ -3,20 +3,25 @@
 #] add zarr
 #] add AWS
 #] add GLMakie
+#] add GLMakie
+#] add GeoJSON
+#] add LibGEOS
 
 # load in libraries
 using Zarr, AWS
+using GeoJSON
+using LibGEOS
 
 # set up aws configuration
 AWS.global_aws_config(AWSConfig(creds=nothing, region = "us-west-2"))
 
 # path to datacube
 path = Array{String,1}()
-path = push!(path,"s3://its-live-data.jpl.nasa.gov/datacubes/v1/N60W040/ITS_LIVE_vel_EPSG3413_G0120_X-150000_Y-2250000.zarr")
-path = push!(path,"s3://its-live-data.jpl.nasa.gov/test_datacube/forAlex/ITS_LIVE_vel_EPSG3413_G0120_X-150000_Y-2250000_rechunked_middate_11117.zarr")
-path = push!(path,"s3://its-live-data.jpl.nasa.gov/test_datacube/forAlex/ITS_LIVE_vel_EPSG3413_G0120_X-150000_Y-2250000_rechunked_xy_10.zarr")
-path = push!(path,"s3://its-live-data.jpl.nasa.gov/test_datacube/forAlex/ITS_LIVE_vel_EPSG3413_G0120_X-150000_Y-2250000_rechunked_xy_50_rechunker.zarr")
-path = push!(path,"s3://its-live-data.jpl.nasa.gov/test_datacube/forAlex/ITS_LIVE_vel_EPSG3413_G0120_X-150000_Y-2250000_rechunked_xy100_with_rechunker.zarr")
+#path = push!(path,"s3://its-live-data.jpl.nasa.gov/datacubes/v1/N60W040/ITS_LIVE_vel_EPSG3413_G0120_X-150000_Y-2250000.zarr")
+#path = push!(path,"s3://its-live-data.jpl.nasa.gov/test_datacube/forAlex/ITS_LIVE_vel_EPSG3413_G0120_X-150000_Y-2250000_rechunked_middate_11117.zarr")
+#path = push!(path,"s3://its-live-data.jpl.nasa.gov/test_datacube/forAlex/ITS_LIVE_vel_EPSG3413_G0120_X-150000_Y-2250000_rechunked_xy_10.zarr")
+#path = push!(path,"s3://its-live-data.jpl.nasa.gov/test_datacube/forAlex/ITS_LIVE_vel_EPSG3413_G0120_X-150000_Y-2250000_rechunked_xy_50_rechunker.zarr")
+#path = push!(path,"s3://its-live-data.jpl.nasa.gov/test_datacube/forAlex/ITS_LIVE_vel_EPSG3413_G0120_X-150000_Y-2250000_rechunked_xy100_with_rechunker.zarr")
 path = push!(path,"s3://its-live-data.jpl.nasa.gov/test_datacube/forAlex/ITS_LIVE_vel_EPSG3413_G0120_X-150000_Y-2250000_xy_10_create.zarr")
 #path = push!(path,"s3://its-live-data.jpl.nasa.gov/test_datacube/forAlex/ITS_LIVE_vel_EPSG3413_G0120_X-150000_Y-2250000_rechunked_xy2_with_rechunker.zarr")
 #path = push!(path,"s3://its-live-data.jpl.nasa.gov/test_datacube/forAlex/ITS_LIVE_vel_EPSG3413_G0120_X-150000_Y-2250000_rechunked_xy1_with_rechunker.zarr")
@@ -28,6 +33,10 @@ function threaded_read(xin)
     end
     xout
 end
+
+cubejson_path = "/its-live-data.jpl.nasa.gov/datacubes/v01/datacubes_100km_v01.json"
+cubejson = AWS.AWSServices.s3("GET", cubejson_path)
+cubes = GeoJSON.read(cubejson)
 
 println("---- v[1, 1, :]-----")
 for i = 1:size(path,1)
