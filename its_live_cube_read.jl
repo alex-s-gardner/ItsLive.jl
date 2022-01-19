@@ -20,6 +20,7 @@ path = push!(path,"s3://its-live-data.jpl.nasa.gov/test_datacube/forAlex/ITS_LIV
 path = push!(path,"s3://its-live-data.jpl.nasa.gov/test_datacube/forAlex/ITS_LIVE_vel_EPSG3413_G0120_X-150000_Y-2250000_xy_10_create.zarr")
 #path = push!(path,"s3://its-live-data.jpl.nasa.gov/test_datacube/forAlex/ITS_LIVE_vel_EPSG3413_G0120_X-150000_Y-2250000_rechunked_xy2_with_rechunker.zarr")
 #path = push!(path,"s3://its-live-data.jpl.nasa.gov/test_datacube/forAlex/ITS_LIVE_vel_EPSG3413_G0120_X-150000_Y-2250000_rechunked_xy1_with_rechunker.zarr")
+#push!(path,"http://its-live-data.s3.amazonaws.com/datacubes/v02/N60W040/ITS_LIVE_vel_EPSG3413_G0120_X-150000_Y-2250000.zarr")
 
 function threaded_read(xin)
     xout = similar(xin)
