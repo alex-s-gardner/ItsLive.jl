@@ -6,5 +6,7 @@
 
 ## Function List 
 **`datacube_catalog`** returns a DataFrame of the catalog for all of the ITS_LIVE zarr datacubes
+
 **`datacube_catalog`** returns the rownumber of the the DataFrame catalog of the ITS_LIVE zarr datacubes that intersects the provided latitude and longituded
+
 **`datacube_nearestxy`** function returns the x/y indicies into a ZarrGroup for the points nearest the provided lat, lon locations
