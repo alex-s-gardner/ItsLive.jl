@@ -3,7 +3,7 @@
 
 # Author
 Alex S. Gardner
-Jet Propulsion Laboratory, California Institute of Technology, Pasedena, California
+Jet Propulsion Laboratory, California Institute of Technology, Pasadena, California
 January 25, 2022
 """
 
