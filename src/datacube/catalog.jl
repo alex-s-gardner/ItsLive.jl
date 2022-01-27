@@ -1,5 +1,5 @@
 """
-    datacube_catalog(catalog_geojson [optional])
+    catalog(catalog_geojson [optional])
 
 this function returns a DataFrame of the catalog for all of the ITS_LIVE zarr datacubes. User can optionally provide the path to catalog_geojson
 
@@ -7,11 +7,11 @@ using ArchGDAL, DataFrames
 
 # Example no inputs
 ```julia
-julia> datacube_catalog()
+julia> catalog()
 ```
 
 ```julia
-julia> datacube_catalog(catalog_geojson = "path/to/catalog.json")
+julia> catalog(catalog_geojson = "path/to/catalog.json")
 ```
 
 # Arguments
@@ -23,7 +23,7 @@ Jet Propulsion Laboratory, California Institute of Technology, Pasedena, Califor
 January 25, 2022
 """
 
-function datacube_catalog(catalog_geojson::String = "https://its-live-data.s3.amazonaws.com/datacubes/catalog_v02.json")
+function catalog(catalog_geojson::String = "https://its-live-data.s3.amazonaws.com/datacubes/catalog_v02.json")
 # set up aws configuration
 
     # read in catalog 
@@ -33,5 +33,5 @@ function datacube_catalog(catalog_geojson::String = "https://its-live-data.s3.am
     layer = ArchGDAL.getlayer(catalog, 0)
 
     # convert to a dataframe
-    return catalogdf = DataFrame(layer)
+    return catalogdf = DataFrames.DataFrame(layer)
 end

@@ -1,5 +1,5 @@
 """
-datacube_nearestxy(lat,lon,dc)
+nearestxy(lat,lon,dc)
 
 this function returns the x/y indicies into a ZarrGroup for the points nearest the provided lat, lon locations
 
@@ -7,11 +7,11 @@ using Proj4
 
 # Example no inputs
 ```julia
-julia> datacube_catalog()
+julia> catalog()
 ```
 
 ```julia
-julia> datacube_catalog(catalog_geojson = "path/to/catalog.json")
+julia> catalog(catalog_geojson = "path/to/catalog.json")
 ```
 
 # Arguments
@@ -23,7 +23,7 @@ Jet Propulsion Laboratory, California Institute of Technology, Pasedena, Califor
 January 25, 2022
 """
 
-function datacube_nearestxy(lat, lon, dc)
+function nearestxy(lat, lon, dc)
   # check that lat is within range
   if any((lat .< -90) .| (lat .> 90))
     error("lat = $lat, not in range [-90 to 90]")

@@ -1,15 +1,15 @@
 """
-    datacube_intersect(lat,lon, catalogdf])
+    intersect(lat,lon, catalogdf])
 
 this function returns the rownumber of the the DataFrame catalog of the ITS_LIVE zarr datacubes that intersects the provided latitude and longituded [decimal degrees].
 
-use datacube_catalog.jl to generate the DataFrame catalog of the ITS_LIVE zarr datacubes
+use catalog.jl to generate the DataFrame catalog of the ITS_LIVE zarr datacubes
 
 using ArchGDAL, DataFrames
 
 # Example
 ```julia
-julia> datacube_intersect(69.1,-49.4, catalogdf)
+julia> intersect(69.1,-49.4, catalogdf)
 ```
 
 # Arguments
@@ -23,7 +23,7 @@ Jet Propulsion Laboratory, California Institute of Technology, Pasedena, Califor
 January 25, 2022
 """
 
-function datacube_intersect(lat::Number,lon::Number, catalogdf)
+function intersect(lat::Number,lon::Number, catalogdf)
 # set up aws configuration
 
     # check that lat is within range
@@ -38,7 +38,7 @@ function datacube_intersect(lat::Number,lon::Number, catalogdf)
 
     # check that catalog is a dataframe
     if ~(catalogdf isa DataFrame)
-        error("provided catalog is not a DataFrame, use datacube_catalog.jl to generate a DataFrame")
+        error("provided catalog is not a DataFrame, use catalog.jl to generate a DataFrame")
     end
 
     # define a point
