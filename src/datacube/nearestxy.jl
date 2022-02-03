@@ -19,7 +19,7 @@ julia> catalog(catalog_geojson = "path/to/catalog.json")
 
 # Author
 Alex S. Gardner
-Jet Propulsion Laboratory, California Institute of Technology, Pasedena, California
+Jet Propulsion Laboratory, California Institute of Technology, Pasadena, California
 January 25, 2022
 """
 
@@ -48,11 +48,14 @@ function nearestxy(lat, lon, dc)
   
   # convert lat and lon into projected datacube coordinates
   trans = Proj4.Transformation("EPSG:4326", "EPSG:" * dc.attrs["projection"])
-  x, y= trans.(eachrow(hcat(lat, lon)))
+  pt = trans.(eachrow(hcat(lat, lon)))
 
   # find the nearest x/y location with 1 full gridcell distance
-  xind = nearest_within.(x, Ref(dc["x"][:]))
-  yind = nearest_within.(y, Ref(dc["y"][:]))
+  xind = nearest_within.(first.(pt), Ref(dc["x"][:]))
+  yind = nearest_within.(last.(pt), Ref(dc["y"][:]))
+
+  xind = round.(Int,xind)
+  yind = round.(Int,yind)
 
   return xind, yind
 end

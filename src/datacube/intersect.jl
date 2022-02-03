@@ -19,7 +19,7 @@ julia> intersect(69.1,-49.4, catalogdf)
 
 # Author
 Alex S. Gardner
-Jet Propulsion Laboratory, California Institute of Technology, Pasedena, California
+Jet Propulsion Laboratory, California Institute of Technology, Pasadena, California
 January 25, 2022
 """
 
@@ -37,7 +37,7 @@ function intersect(lat::Number,lon::Number, catalogdf)
     end
 
     # check that catalog is a dataframe
-    if ~(catalogdf isa DataFrame)
+    if ~(catalogdf isa DataFrames.DataFrame)
         error("provided catalog is not a DataFrame, use catalog.jl to generate a DataFrame")
     end
 
@@ -49,7 +49,7 @@ function intersect(lat::Number,lon::Number, catalogdf)
     for row in eachrow(catalogdf)
         if ArchGDAL.contains(row[1], point)
             found = true
-            return rownumber(row)
+            return DataFrames.rownumber(row)
             break
         end
     end
