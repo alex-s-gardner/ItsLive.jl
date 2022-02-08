@@ -9,5 +9,6 @@ using Zarr
 include("datacube/catalog.jl")
 include("datacube/intersect.jl")
 include("datacube/nearestxy.jl")
+include("datacube/getvar.jl")
 
 end # module

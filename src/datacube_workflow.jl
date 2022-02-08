@@ -18,52 +18,10 @@ catalogdf = ITS_LIVE.catalog()
 # find the DataFrame rows of the datacube that intersect a series of lat/lon points
 lat = [69.1, 70.1, 90]
 lon = [-49.4, -48, 15]
-rows = ITS_LIVE.intersect.(lat,lon, Ref(catalogdf))
 
-# find valid intersecting points
-valid_intersect = .~ismissing.(rows)
+# example of datacube contents
+dc = Zarr.zopen(catalogdf[1,"zarr_url"]).arrays
 
-# remove non-intersecting points 
-deleteat!(lat,findall(.~valid_intersect))
-deleteat!(lon,findall(.~valid_intersect))
-deleteat!(rows,findall(.~valid_intersect))
+# retrieve data columns from Zarr as a matrix of vectors
+@time vx = ITS_LIVE.getvar(lat,lon,"vx",catalogdf)
 
-# find all unique datacubes (mutiple points can intersect the same cube)
-urows = unique(rows)
-
-yind = zeros(size(lat))
-xind = zeros(size(lat))
-for row = urows
-    # extract path to Zarr datacube file
-    path2cube = catalogdf[row,"zarr_url"]
-
-    # load Zarr group
-    dc = Zarr.zopen(path2cube)
-
-    # find closest point
-     a,b = ITS_LIVE.nearestxy(lat[row.==rows], lon[row.==rows], dc)
-     xind[row.==rows] .= a
-     yind[row.==rows] .= b
-
-     # extract timeseries from datacube
-     col1, col2 = [foo[i...,:] for i in ((1,2),(3,4))];
-
-     mask = falses(size(dc["vx"]))
-for 
-
-     mask[[CartesianIndex((1,2)),CartesianIndex((1,2))],:] .= true
-     foo = dc["vx"][[mask]
-
-
-a = CartesianIndices((1,[1,4],1:size(dc["v"])[3]))
-
-@time foo = 
-
-
-mask = falses(4,5,1)
-mask[3,2:4,1] .= true
-
-mask
-
-
-CartesianIndex(([1,3],[2,5]))
