@@ -1,7 +1,7 @@
 """
     getvar(lat,lon, varnames, catalogdf])
 
-this function returns an m x n matrix of vectors with m = length(lat) rows and n = length(varnames) columns for the points nearest the lat/lon location from ITS_LIVE Zarr datacubes
+this function returns a named m x n matrix of vectors with m = length(lat) rows and n = length(varnames)+2(for lat and lon) columns for the points nearest the lat/lon location from ITS_LIVE Zarr datacubes
 
 use catalog.jl to generate the DataFrame catalog of the ITS_LIVE zarr datacubes
 
@@ -126,5 +126,12 @@ vout = reshape(vout, (div(length(vout),length(varnames)), length(varnames)))
 i = sortperm(ind[1:div(length(vout),length(varnames))])
 vout = vout[i,:]
 
-return vout
+# add lat/lon to matrix
+vout = hcat(lat,lon,vout)
+
+# add naming to matrix
+vout = NamedArrays.NamedArray(vout)
+NamedArrays.setnames!(vout, vcat("lat","lon",varnames), 2)
+
+return vout 
 end

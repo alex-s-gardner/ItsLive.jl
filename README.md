@@ -11,4 +11,4 @@
 
 **`x, y = ITS_LIVE.nearestxy(latitude, longitude, DataArray)`** returns the x/y indicies into a ZarrGroup for the points nearest the provided lat, lon locations
 
-**`M = ITS_LIVE.getvar(latitude, longitude, varnames, catalogdf)`** returns an m x n matrix of variables nearest the lat/lon location from the ITS_LIVE Zarr datacubes, with m = length(latitude/longitude) rows and n = length(varnames) columns
+**`M = ITS_LIVE.getvar(latitude, longitude, varnames, catalogdf)`** returns a named m x n matrix of vectors with m = length(lat) rows and n = length(varnames)+2(for lat and lon) columns for the points nearest the lat/lon location from ITS_LIVE Zarr datacubes

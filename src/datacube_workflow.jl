@@ -8,7 +8,7 @@ January 25, 2022
 """
 
 # Revise.jl allows you to modify code and use the changes without restarting Julia
-using Zarr, Revise
+using Zarr, Revise, Plots
 
 import ITS_LIVE
 
@@ -23,5 +23,7 @@ lon = [-49.4, -48, 15]
 dc = Zarr.zopen(catalogdf[1,"zarr_url"]).arrays
 
 # retrieve data columns from Zarr as a matrix of vectors
-@time vx = ITS_LIVE.getvar(lat,lon,"vx",catalogdf)
+varnames = ["mid_date", "date_dt", "vx", "vx_error", "vy", "vy_error"]
+@time M = ITS_LIVE.getvar(lat,lon,varnames ,catalogdf)
 
+plot(M[1,"mid_date"], M[1,"vx"], seriestype = :scatter)
