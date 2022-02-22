@@ -1,7 +1,7 @@
 """
 nearestxy(lat,lon,dc)
 
-this function returns the x/y indicies into a ZarrGroup for the points nearest the provided lat, lon locations
+this function returns the x/y indices into a ZarrGroup for the points nearest the provided lat, lon locations
 
 using Proj4
 
@@ -33,6 +33,7 @@ function nearestxy(lat::Union{Vector,Number}, lon::Union{Vector,Number}, dc::ZGr
     error("lon = $lon, not in range [-180 to 180]")
   end
 
+  # define function that returns nearest point -or- missing if point is further than 1 gridcell
   function nearest_within(xPt, x)
     xWithin = abs(x[2] - x[1])
     xdist = abs.(x .- xPt)

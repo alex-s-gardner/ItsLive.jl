@@ -5,7 +5,7 @@ this function returns a named m x n matrix of vectors with m = length(lat) rows 
 
 use catalog.jl to generate the DataFrame catalog of the ITS_LIVE zarr datacubes
 
-using DataFrames
+using DataFrames Dates NamedArrays
 
 # Example
 ```julia
@@ -21,7 +21,7 @@ julia> getvar(69.1,-49.4, ["mid_date", "v"], catalogdf)
 # Author
 Alex S. Gardner
 Jet Propulsion Laboratory, California Institute of Technology, Pasadena, California
-February 4, 2022
+February 10, 2022
 """
 function getvar(lat::Union{Vector,Number},lon::Union{Vector,Number}, varnames::Union{String, Vector{String}}, catalogdf)
 
@@ -44,6 +44,10 @@ if(typeof(varnames) == String)
     varnames = [varnames]
 end
 
+if ~isa(lat, Array)
+    lat = [lat]
+    lon = [lon]
+end
 
 # find the DataFrame rows of the datacube that intersect a series of lat/lon points
 rows = ITS_LIVE.intersect.(lat,lon, Ref(catalogdf))
@@ -59,7 +63,7 @@ vind = Vector{Int64}()
 
 # select variable to extract
 # varnames = ["vx"]
-for row in urows
+Threads.@threads for row in urows
     # check if row is "missing"
     if ismissing(row)
         ind0 = findall(ismissing.(rows))
@@ -83,8 +87,9 @@ for row in urows
     # find lat/lon values that intersect datacube
     ind0 = findall(x -> x==row, skipmissing(rows))
 
-    # find closest point
-    c,r = ITS_LIVE.nearestxy(lat[ind0], lon[ind0], dc)
+    # find closest point 
+    # NOTE: in Zarr cube "x" changes along rows (r) and "y" changes along columns (c)
+    r, c = ITS_LIVE.nearestxy(lat[ind0], lon[ind0], dc)
     rind[ind0] .= r
     cind[ind0] .= c
     
@@ -132,6 +137,35 @@ vout = hcat(lat,lon,vout)
 # add naming to matrix
 vout = NamedArrays.NamedArray(vout)
 NamedArrays.setnames!(vout, vcat("lat","lon",varnames), 2)
+
+
+# find datetime variables and convert 
+datevarnames = ["acquisition_date_img2", "acquisition_date_img1", "date_center", "mid_date"]
+
+# define a function to convert from python datetime to Julia datetime
+
+# create SecondMissing function to account for missing dates
+SecondMissing(x::Missing) = missing; 
+SecondMissing(x::Number) =  Dates.Second(x); 
+npdt64_to_dt(t) =  SecondMissing.((round.(t.*86400))) .+ Dates.DateTime(1970) 
+
+a = Base.intersect(varnames, datevarnames)
+
+for j = 1:length(a)
+    for i = 1:size(vout,1)
+        vout[i,a[j]]= npdt64_to_dt(vout[i,a[j]])
+    end
+end
+
+# convert other numeric variables to Float64. This is done to make future function type transparent
+a = setdiff(varnames, datevarnames)
+for j = 1:length(a)
+    if  isa(vout[1,a[j]][1], Union{Number, Missing})
+        for i = 1:size(vout,1)
+            vout[i,a[j]]= convert.(Union{Missing, Float64},(vout[i,a[j]]))
+        end
+    end
+end
 
 return vout 
 end
