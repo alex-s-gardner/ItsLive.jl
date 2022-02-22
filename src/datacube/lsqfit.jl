@@ -1,18 +1,18 @@
 """
     lsqfit(v,v_err,mid_date,date_dt,mad_thresh[optional],filt_iterations[optional])
 
-error wighted model fit to descrete interval data 
+error wighted model fit to discrete interval data 
 
 using Statistics
 
 # Example
 ```julia
-julia> lsqfit(v,v_err,mid_date,date_dt,mad_thresh)
+julia> t_fit, v_fit, amp_fit, phase_fit, amp_fit_err, v_fit_err, fit_count, fit_outlier_frac = lsqfit(v,v_err,mid_date,date_dt,mad_thresh)
 ```
 
 # Arguments
-   - `v::Vector{Any}`: image-pair (descrete interval) velocity
-   - `v_err::Vector{Any}`: image-pair (descrete interval) velocity error
+   - `v::Vector{Any}`: image-pair (discrete interval) velocity
+   - `v_err::Vector{Any}`: image-pair (discrete interval) velocity error
    - `mid_date::Vector{DateTime}`: center date of image-pair [] 
    - `date_dt::Vector{Any}`: time seperation between image pairs [days]
    - `mad_thresh::Number`: optional input for MAD treshold for outlier rejection
@@ -41,8 +41,6 @@ vx_error[stable_shift.==1] .= vx_error[stable_shift.==1] .+ 5
 vy_error[stable_shift.==1] .= vy_error[stable_shift.==1] .+ 5
 =#
 
-# this function fit's 
-# [A,ph,A_err,t_int,v_int,v_int_err,N_int,outlier_frac] 
 
 valid = .~ismissing.(v) 
 
@@ -166,7 +164,7 @@ for i = 1:filt_iterations
     M = M[:,hasdata];
 end
 
-outlier_frac = (totalnum-length(yr1))./totalnum;
+fit_outlier_frac = (totalnum-length(yr1))./totalnum;
 
 ## Second iteration
 
@@ -186,17 +184,17 @@ p = (w_d.*D) \ (w_d.*d_obs);
 
 # Convert coefficients to amplitude and phase of a single sinusoid:
 Nyrs = length(y1);
-amp = hypot.(p[1:Nyrs],p[Nyrs+1:2*Nyrs]); # amplitude of sinusoid from trig identity a*sin(t) + b*cos(t) = d*sin(t+phi), where d=hypot(a,b) and phi=atan2(b,a).
+amp_fit = hypot.(p[1:Nyrs],p[Nyrs+1:2*Nyrs]); # amplitude of sinusoid from trig identity a*sin(t) + b*cos(t) = d*sin(t+phi), where d=hypot(a,b) and phi=atan2(b,a).
 
 ## THIS COULD BE SOURCE OF ERRORS AS MATLAB USED atan2
 phase_rad = atan.(p[Nyrs+1:2*Nyrs],p[1:Nyrs]); # phase in radians
-phase = 365.25*(mod.(0.25 .- phase_rad/(2*pi),1)); # phase converted such that it reflects the day when value is maximized
+phase_fit = 365.25*(mod.(0.25 .- phase_rad/(2*pi),1)); # phase converted such that it reflects the day when value is maximized
 
 # Goodness of fit:
 d_model = sum(broadcast(*,D,transpose(p)),dims=2);
 
 # A_err is the *velocity* (not displacement) error, which is the displacement error divided by the weighted mean dt:
-amp_err = Vector{Union{Float64,Missing}}(missing, size(amp))
+amp_fit_err = Vector{Union{Float64,Missing}}(missing, size(amp_fit))
 
 function stdw(x,w)
     μ = mean(x)
@@ -206,20 +204,18 @@ end
 
 for k = 1:Nyrs
     ind = M[:,k] .> 0;
-    amp_err[k] = stdw(d_obs[ind]-d_model[ind],w_d[ind]) ./ (sum(w_d[ind].*dyr[ind])./sum(w_d[ind])); # asg replaced call to wmean [!!! FOUND AND FIXED ERROR !!!!!!]
+    amp_fit_err[k] = stdw(d_obs[ind]-d_model[ind],w_d[ind]) ./ (sum(w_d[ind].*dyr[ind])./sum(w_d[ind])); # asg replaced call to wmean [!!! FOUND AND FIXED ERROR !!!!!!]
 end
 
-t_int  = Dates.DateTime.(round.(Int,y1),7,1)
-v_int = p[2*Nyrs+1:end];
-# # v_int = p(2*Nyrs+1:end) + polyval(pv,t_int,S,mu);
+t_fit  = Dates.DateTime.(round.(Int,y1),7,1)
+v_fit = p[2*Nyrs+1:end];
 
 # Number of equivalent image pairs per year: (1 image pair equivalent means a full year of data. It takes about 23 16-day image pairs to make 1 year equivalent image pair.)
-N_int = sum(M.>0);
+fit_count = sum(M.>0);
 
-v_int_err =  transpose(1 ./ sqrt.(sum(w_v.*M, dims=1)));
+v_fit_err =  transpose(1 ./ sqrt.(sum(w_v.*M, dims=1)));
 
-d_model = sum(broadcast(*,D,transpose(p)),dims=2); # modeled displacements (m)
 
-return amp,phase,amp_err,t_int,v_int,v_int_err,N_int,outlier_frac
+return t_fit, v_fit, amp_fit, phase_fit, amp_fit_err, v_fit_err, fit_count, fit_outlier_frac
 
 end

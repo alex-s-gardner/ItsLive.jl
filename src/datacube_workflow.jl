@@ -38,13 +38,12 @@ end
 
 # fit seasonal model with iterannual changes in amplitude and phase]
 i = 1;
-ampx,phasex,amp_errx,t_intx,v_intx,v_int_errx,N_intx,outlier_fracx = ITS_LIVE.lsqfit(C[i,"vx"],C[i,"vx_error"],C[i,"mid_date"],C[i,"date_dt"])
+tx_fit, vx_fit, ampx_fit, phasex_fit, ampx_fit_err, vx_fit_err, fitx_count, fitx_outlier_frac = ITS_LIVE.lsqfit(C[i,"vx"],C[i,"vx_error"],C[i,"mid_date"],C[i,"date_dt"])
 
 # interpolate lsqfit model to fine time resolution
-ti = DateTime.(DateFormats.YearDecimal.(2014:0.1:2021))
-vix, v_int_ix = lsqfit_interp(t_intx,v_intx,ampx,phasex,ti,v_int_errx,amp_errx) # need to fix extraploaltion at some point
-viy, v_int_iy = lsqfit_interp(t_inty,v_inty,ampy,phasey,ti,v_int_erry,amp_erry) # need to fix extraploaltion at some point
+t_i = DateTime.(DateFormats.YearDecimal.(2014:0.1:2021))
+vx_i, vx_i_err = ITS_LIVE.lsqfit_interp(tx_fit, vx_fit, ampx_fit, phasex_fit, vx_fit_err, ampx_fit_err, t_i) # need to fix extraploaltion at some point
 
 # plot data and fit
 p = plot(C[i,"mid_date"], C[i,"vx"], seriestype = :scatter)
-p = plot!(ti, vix)
+p = plot!(t_i, vx_i)
