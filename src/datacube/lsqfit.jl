@@ -7,7 +7,7 @@ using Statistics
 
 # Example
 ```julia
-julia> t_fit, v_fit, amp_fit, phase_fit, amp_fit_err, v_fit_err, fit_count, fit_outlier_frac = lsqfit(v,v_err,mid_date,date_dt,mad_thresh)
+julia> t_fit, v_fit, amp_fit, phase_fit, v_fit_err, amp_fit_err, fit_count, fit_outlier_frac, outlier = lsqfit(v,v_err,mid_date,date_dt,mad_thresh)
 ```
 
 # Arguments
@@ -30,7 +30,7 @@ February 17, 2022
 """
 
 
-function lsqfit(v, v_err, mid_date, date_dt, mad_thresh::Number = 5, filt_iterations::Number = 3)
+function lsqfit(v, v_err, mid_date, date_dt, mad_thresh::Number = 6, filt_iterations::Number = 1)
 
 #=
 # add systimatic error based on level of co-registration
@@ -80,6 +80,7 @@ d_obs = v.*dyr; # observed displacement in meters
 =#
 
 
+
 # apply an intitial w point running filter
 valid = .!outlier
 p = sortperm(mid_date[valid]);
@@ -93,9 +94,9 @@ foo[p[resid .> (mad_thresh*2*sigma)]] .= true # multiply threshold by 2 as this 
 
 
 ## Make matrix of percentages of years corresponding to each displacement measurement
-D, tD, M = ITS_LIVE.design_matrix(t1, t2, "interannual")
+D, tD, M = ITS_LIVE.design_matrix(t1, t2, "sinusoidal_interannual")
 yr = ITS_LIVE.decimalyear(tD)
-
+println(sum(outlier .& .!ismissing.(v)))
 # Iterative mad filter []
 for i = 1:filt_iterations
     valid = .!outlier
@@ -118,6 +119,8 @@ for i = 1:filt_iterations
     #yr = yr[hasdata];
     #M = M[:,hasdata];
 end
+
+println(sum(outlier .& .!ismissing.(v)))
 
 
 D, tD, M = ITS_LIVE.design_matrix(t1, t2, "sinusoidal_interannual")
@@ -164,6 +167,9 @@ fit_count = sum(M[valid,:].>0, dims=1);
 
 v_fit_err =  transpose(1 ./ sqrt.(sum(w_v[valid].*M[valid,:], dims=1)));
 
-return t_fit, v_fit, amp_fit, phase_fit, amp_fit_err, v_fit_err, fit_count, fit_outlier_frac, outlier
+# as per convention, set missing values as non outliers 
+outlier[ismissing.(v)] .= false
+
+return t_fit, v_fit, amp_fit, phase_fit, v_fit_err, amp_fit_err, fit_count, fit_outlier_frac, outlier
 
 end

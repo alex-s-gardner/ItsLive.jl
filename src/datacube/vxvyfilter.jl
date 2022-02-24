@@ -9,7 +9,7 @@ using Statistics
 
 # Example
 ```julia
-julia> vxvyfilter(vx,vy,dt,sensor)
+julia> outlier, dtmax, sensorgroups = vxvyfilter(vx,vy,dt,sensor)
 ```
 
 # Arguments
@@ -24,7 +24,7 @@ Jet Propulsion Laboratory, California Institute of Technology, Pasadena, Califor
 February 10, 2022
 """
 
-function vxvyfilter(vx,vy,dt,sensor)
+function vxvyfilter(vx,vy,dt,sensor::Vector{Any})
 
     # specify groups of sensors to be filtered together
     sensorgroups = Vector{Vector{String}}(undef,1)
@@ -39,7 +39,7 @@ function vxvyfilter(vx,vy,dt,sensor)
 
     # initialize output
     dtmax = Vector{Union{Missing, Float64}}(missing, size(sensorgroups))
-    outlierfrac = Vector{Union{Missing, Float64}}(missing, size(sensorgroups))
+    outlier = falses(size(vx))
     for sg = 1:length(sensorgroups)
 
         sgind = falses(size(sensor))
@@ -56,18 +56,16 @@ function vxvyfilter(vx,vy,dt,sensor)
             # find the minimum acceptable dt threshold
             dtmax[sg] = min(vxdtmax, vydtmax)
 
+            println(dtmax[sg])
+            
             if dtmax[sg] > 20E3
                 # no data needs to be masked
-                outlierfrac[sg] = 0;
             else
                 # replace data that exceed dt threshold with missings 
                 valind = (.~ismissing.(vx)) .& sgind
-                rmind = (dt .> dtmax[sg]) .& valind
-                vx[rmind] .= missing
-                vy[rmind] .= missing
-                outlierfrac[sg] = sum(rmind) / sum(valind)
+                outlier = ((dt .> dtmax[sg]) .& valind) .| outlier 
             end
         end
     end
-    return vx, vy, dtmax, outlierfrac, sensorgroups
+    return outlier, dtmax, sensorgroups
 end

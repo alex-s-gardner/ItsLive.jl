@@ -76,14 +76,14 @@ function dtfilter(x, dt , binedges::Vector{Float64} = [0, 32, 64, 128, 256, 1E10
     minBound = binMed - (binMad * dtbin_mad_thresh * 1.4826);
     maxBound = binMed + (binMad * dtbin_mad_thresh * 1.4826);
 
+    # check if distributions overlap
     exclude = (minBound .> maxBound[1]) .| (maxBound .< minBound[1]);
 
-    dtmax = findlast(.!exclude)
-    if dtmax == 0
+    if !any(exclude)
         dtmax = (2^15 - 1)
     else
+        dtmax = findfirst(exclude)
         dtmax = binedges[dtmax]
     end
-
     return dtmax
 end
