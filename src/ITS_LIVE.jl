@@ -10,6 +10,8 @@ using Dates
 using Statistics
 using DateFormats
 using BSplineKit
+using FastRunningMedian
+
 
 include("datacube/catalog.jl")
 include("datacube/intersect.jl")
@@ -20,5 +22,7 @@ include("datacube/vxvyfilter.jl")
 include("datacube/decimalyear.jl")
 include("datacube/lsqfit.jl")
 include("datacube/lsqfit_interp.jl")
+include("datacube/design_matrix.jl")
+include("datacube/annual_matrix.jl")
 
 end # module

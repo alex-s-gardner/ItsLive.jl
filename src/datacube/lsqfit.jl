@@ -30,7 +30,7 @@ February 17, 2022
 """
 
 
-function lsqfit(v, v_err, mid_date, date_dt, mad_thresh::Number = 3, filt_iterations::Number = 3;)
+function lsqfit(v, v_err, mid_date, date_dt, mad_thresh::Number = 5, filt_iterations::Number = 3)
 
 #=
 # add systimatic error based on level of co-registration
@@ -41,16 +41,10 @@ vx_error[stable_shift.==1] .= vx_error[stable_shift.==1] .+ 5
 vy_error[stable_shift.==1] .= vy_error[stable_shift.==1] .+ 5
 =#
 
-
-valid = .~ismissing.(v) 
+outlier = ismissing.(v) 
 
 t1 = mid_date .- (Dates.Second.(round.(Int64,date_dt .* 86400 ./2)))
 t2 = mid_date .+ (Dates.Second.(round.(Int64,date_dt .* 86400 ./2)))
-t1 = t1[valid];
-t2 = t2[valid];
-v = v[valid]
-v_err = v_err[valid]
-
 
 # Convert datenums to decimal years:
 yr1 = ITS_LIVE.decimalyear(t1)
@@ -85,105 +79,60 @@ d_obs = v.*dyr; # observed displacement in meters
 # # w_v = w_v(~outliers);
 =#
 
+
+# apply an intitial w point running filter
+valid = .!outlier
+p = sortperm(mid_date[valid]);
+w = 15;
+vmed = FastRunningMedian.running_median((convert.(Float64, v[valid][p])),w)
+resid = abs.(v[valid][p] - vmed);
+sigma = Statistics.median(resid)*1.4826;
+
+foo = @view outlier[valid];
+foo[p[resid .> (mad_thresh*2*sigma)]] .= true # multiply threshold by 2 as this is a crude filter
+
+
 ## Make matrix of percentages of years corresponding to each displacement measurement
-
-y1 = floor(minimum(yr1)):floor(maximum(yr2));
-
-M = zeros(length(dyr),length(y1));
-
-# Loop through each year:
-for k = 1:length(y1)
-    
-    # Set all measurements that begin before the first day of the year and end after the last
-    # day of the year to 1:
-    ind = (yr1.<=y1[k]) .& (yr2.>=(y1[k]+1));
-    M[ind,k] .= 1;
-    
-    # Within year:
-    ind = (yr1.>=y1[k]) .& (yr2.<(y1[k]+1));
-    M[ind,k] = dyr[ind];
-    
-    # Started before the beginning of the year and ends during the year:
-    ind = (yr1.<y1[k]) .& (yr2.>=y1[k]) .& (yr2.<(y1[k].+1));
-    M[ind,k] = yr2[ind] .- y1[k];
-    
-    # Started during the year and ends the next year:
-    ind = (yr1.>=y1[k]) .& (yr1.<(y1[k].+1)) .& (yr2.>=(y1[k]+1));
-    M[ind,k] = (y1[k]+1) .- yr1[ind];
-end
-
-hasdata = vec(sum(M,dims=1).>0);
-y1 = y1[hasdata];
-M = M[:,hasdata];
+D, tD, M = ITS_LIVE.design_matrix(t1, t2, "interannual")
+yr = ITS_LIVE.decimalyear(tD)
 
 # Iterative mad filter []
-totalnum = length(yr1);
 for i = 1:filt_iterations
-
-    # Displacement Vandermonde matrix: (these are displacements! not velocities, so this matrix is just the definite integral wrt time of a*sin(2*pi*yr)+b*cos(2*pi*yr)+c.
-    N = ((sin.(2*pi*yr2) - sin.(2*pi*yr1))./(2*pi));
-    N = mapslices(row->(N).*row,float(M.>0), dims=1);
-
-    P = (cos.(2*pi*yr1) - cos.(2*pi*yr2)) ./ (2*pi);
-    P = mapslices(row->(P).*row,float(M.>0), dims=1);
-
-    D = hcat(P, N, M);
-
-    # Solve for coefficients of each column in the Vandermonde:
-    p = (w_d.*D) \ (w_d.*d_obs);
-
-    #= 
-    # Displacement Vandermonde matrix: (these are displacements! not velocities, so this matrix is just the definite integral wrt time of a*sin(2*pi*yr)+b*cos(2*pi*yr)+c.
-    D = hcat((cos.(2*pi*yr1) - cos.(2*pi*yr2)) ./ (2*pi), (sin.(2*pi*yr2) - sin.(2*pi*yr1))./(2*pi), M, ones(size(dyr)));
+    valid = .!outlier
     
     # Solve for coefficients of each column in the Vandermonde:
-    p = (w_d.*D) \ (w_d.*d_obs);
-    =#
+    p = (w_d[valid].*D[valid,:]) \ (w_d[valid].*d_obs[valid]);
 
-    ## Find and remove outliers
+    ## Find and remove outliers    
+    d_model = sum(broadcast(*,D[valid,:],transpose(p)),dims=2); # modeled displacements (m)
     
-    d_model = sum(broadcast(*,D,transpose(p)),dims=2); # modeled displacements (m)
-    
-    d_resid = abs.(d_obs - d_model)./dyr; # devide by dt to avoid penalizing long dt [asg]
+    d_resid = abs.(d_obs[valid] - d_model)./dyr[valid]; # devide by dt to avoid penalizing long dt [asg]
     
     d_sigma = Statistics.median(d_resid)*1.4826; # robust standard deviation of errors, using median absolute deviation
-    valid = vec(d_resid .<= (mad_thresh*d_sigma));
 
-    # Remove outliers:
-    yr1 = yr1[valid];
-    yr2 = yr2[valid];
-    dyr = dyr[valid];
-    d_obs = d_obs[valid];
-    w_d = w_d[valid];
-    w_v = w_v[valid];
-    M = M[valid,:];
-    
-    # Remove no-data columns from M:
-    hasdata = vec(sum(M, dims = 1).>1);
-    y1 = y1[hasdata];
-    M = M[:,hasdata];
+    # valid = vec(d_resid .<= (mad_thresh*d_sigma));
+    outlier[valid] = vec(d_resid .> (mad_thresh*d_sigma))
+
+    ## Remove no-data columns from M:
+    #hasdata = vec(sum(M, dims = 1).>1);
+    #yr = yr[hasdata];
+    #M = M[:,hasdata];
 end
 
-fit_outlier_frac = (totalnum-length(yr1))./totalnum;
 
-## Second iteration
+D, tD, M = ITS_LIVE.design_matrix(t1, t2, "sinusoidal_interannual")
+yr = ITS_LIVE.decimalyear(tD)
 
-# Displacement Vandermonde matrix: (these are displacements! not velocities, so this matrix is just the definite integral wrt time of a*sin(2*pi*yr)+b*cos(2*pi*yr)+c.
-N = ((sin.(2*pi*yr2) - sin.(2*pi*yr1))./(2*pi));
-N = mapslices(row->(N).*row,float(M.>0), dims=1);
-
-P = (cos.(2*pi*yr1) - cos.(2*pi*yr2)) ./ (2*pi);
-P = mapslices(row->(P).*row,float(M.>0), dims=1);
-
-D = hcat(P, N, M);
+valid = .!outlier
+fit_outlier_frac = sum(valid)./length(valid);
 
 # Solve for coefficients of each column in the Vandermonde:
-p = (w_d.*D) \ (w_d.*d_obs);
+p = (w_d[valid].*D[valid,:]) \ (w_d[valid].*d_obs[valid]);
 
 ## Postprocess
 
 # Convert coefficients to amplitude and phase of a single sinusoid:
-Nyrs = length(y1);
+Nyrs = length(yr);
 amp_fit = hypot.(p[1:Nyrs],p[Nyrs+1:2*Nyrs]); # amplitude of sinusoid from trig identity a*sin(t) + b*cos(t) = d*sin(t+phi), where d=hypot(a,b) and phi=atan2(b,a).
 
 ## THIS COULD BE SOURCE OF ERRORS AS MATLAB USED atan2
@@ -203,19 +152,18 @@ function stdw(x,w)
 end
 
 for k = 1:Nyrs
-    ind = M[:,k] .> 0;
+    ind = (M[:,k] .> 0) .& valid;
     amp_fit_err[k] = stdw(d_obs[ind]-d_model[ind],w_d[ind]) ./ (sum(w_d[ind].*dyr[ind])./sum(w_d[ind])); # asg replaced call to wmean [!!! FOUND AND FIXED ERROR !!!!!!]
 end
 
-t_fit  = Dates.DateTime.(round.(Int,y1),7,1)
+t_fit  = Dates.DateTime.(round.(Int,yr),7,1)
 v_fit = p[2*Nyrs+1:end];
 
 # Number of equivalent image pairs per year: (1 image pair equivalent means a full year of data. It takes about 23 16-day image pairs to make 1 year equivalent image pair.)
-fit_count = sum(M.>0);
+fit_count = sum(M[valid,:].>0, dims=1);
 
-v_fit_err =  transpose(1 ./ sqrt.(sum(w_v.*M, dims=1)));
+v_fit_err =  transpose(1 ./ sqrt.(sum(w_v[valid].*M[valid,:], dims=1)));
 
-
-return t_fit, v_fit, amp_fit, phase_fit, amp_fit_err, v_fit_err, fit_count, fit_outlier_frac
+return t_fit, v_fit, amp_fit, phase_fit, amp_fit_err, v_fit_err, fit_count, fit_outlier_frac, outlier
 
 end

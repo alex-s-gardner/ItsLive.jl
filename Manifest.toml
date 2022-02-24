@@ -411,6 +411,12 @@ git-tree-sha1 = "58d83dd5a78a36205bdfddb82b1bb67682e64487"
 uuid = "442a2c76-b920-505d-bb47-c5924d526838"
 version = "0.4.9"
 
+[[deps.FastRunningMedian]]
+deps = ["DataStructures"]
+git-tree-sha1 = "c045e70c3cd28eb3ac4628b634b01eaef5b56ea1"
+uuid = "3a47ddbd-112b-4cc1-b00e-3746ec434ee5"
+version = "0.1.0"
+
 [[deps.FileIO]]
 deps = ["Pkg", "Requires", "UUIDs"]
 git-tree-sha1 = "80ced645013a5dbdc52cf70329399c35ce007fae"

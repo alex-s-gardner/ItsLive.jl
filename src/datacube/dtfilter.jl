@@ -16,6 +16,7 @@ julia> dtfilter(vx,dt,binedge)
    - `x::Vector{Any}`: value to be filtered as a function of dt (typically velocity)
    - `dt::Vector{Any}`: time seperation between image pairs [days]
    - `binedges::Vector{Float64}`: *optional* edges of dt bins into which vx and vy will be grouped and compared
+   - `dtbin_mad_thresh::Number`: used to determine in dt means are significantly different
 
 # Author
 Alex S. Gardner
@@ -23,7 +24,7 @@ Jet Propulsion Laboratory, California Institute of Technology, Pasadena, Califor
 February 10, 2022
 """
 
-function dtfilter(x, dt , binedges::Vector{Float64} = [0, 32, 64, 128, 256, 1E10])
+function dtfilter(x, dt , binedges::Vector{Float64} = [0, 32, 64, 128, 256, 1E10], dtbin_mad_thresh::Number = 2)
 
 
     ## define internal functions 
@@ -70,16 +71,14 @@ function dtfilter(x, dt , binedges::Vector{Float64} = [0, 32, 64, 128, 256, 1E10
             binMed[i] = foo[1]
             binMad[i] = foo[2]
     end
-    # dtbin_mad_thresh: used to determine in dt means are significantly different
-    dtbin_mad_thresh = 2; 
 
     # check if populations overlap (use first, smallest dt, bin as reference)
-    minBound = binMed - binMad * dtbin_mad_thresh * 1.4826;
-    maxBound = binMed + binMad * dtbin_mad_thresh * 1.4826;
+    minBound = binMed - (binMad * dtbin_mad_thresh * 1.4826);
+    maxBound = binMed + (binMad * dtbin_mad_thresh * 1.4826);
 
-    exclude = (minBound .> maxBound[:,:,1]) .| (maxBound .< minBound[1]);
+    exclude = (minBound .> maxBound[1]) .| (maxBound .< minBound[1]);
 
-    dtmax = findlastorzero(exclude)
+    dtmax = findlast(.!exclude)
     if dtmax == 0
         dtmax = (2^15 - 1)
     else
