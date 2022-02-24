@@ -56,8 +56,6 @@ function vxvyfilter(vx,vy,dt,sensor::Vector{Any})
             # find the minimum acceptable dt threshold
             dtmax[sg] = min(vxdtmax, vydtmax)
 
-            println(dtmax[sg])
-            
             if dtmax[sg] > 20E3
                 # no data needs to be masked
             else

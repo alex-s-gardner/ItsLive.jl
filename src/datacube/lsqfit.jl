@@ -96,7 +96,7 @@ foo[p[resid .> (mad_thresh*2*sigma)]] .= true # multiply threshold by 2 as this 
 ## Make matrix of percentages of years corresponding to each displacement measurement
 D, tD, M = ITS_LIVE.design_matrix(t1, t2, "sinusoidal_interannual")
 yr = ITS_LIVE.decimalyear(tD)
-println(sum(outlier .& .!ismissing.(v)))
+
 # Iterative mad filter []
 for i = 1:filt_iterations
     valid = .!outlier
@@ -119,8 +119,6 @@ for i = 1:filt_iterations
     #yr = yr[hasdata];
     #M = M[:,hasdata];
 end
-
-println(sum(outlier .& .!ismissing.(v)))
 
 
 D, tD, M = ITS_LIVE.design_matrix(t1, t2, "sinusoidal_interannual")
