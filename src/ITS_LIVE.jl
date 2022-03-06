@@ -11,7 +11,8 @@ using Statistics
 using DateFormats
 using BSplineKit
 using FastRunningMedian
-
+using Polynomials
+using Plots
 
 include("datacube/catalog.jl")
 include("datacube/intersect.jl")

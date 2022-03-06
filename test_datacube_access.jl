@@ -11,6 +11,40 @@ println(r)
 print("col = ")
 println(c)
 
+
+println("---------------------------------")
+path2cube = "http://its-live-data.s3.amazonaws.com/test_datacubes/forAlex/ITS_LIVE_vel_EPSG3413_G0120_X-150000_Y-2250000_rechunked_t_25730_xy_10_test.zarr"
+println(path2cube);
+dc = Zarr.zopen(path2cube)
+@time for i = 1:n; dc["v"][r[i],c[i],:]; end
+println("--- using 4 threads ---");
+@time Threads.@threads for i = 1:n; dc["v"][r[i],c[i],:]; end
+
+println()
+println("---------------------------------")
+path2cube = "http://its-live-data.s3.amazonaws.com/test_datacubes/forAlex/ITS_LIVE_vel_EPSG3413_G0120_X-150000_Y-2250000_t_25370_xy_10_create_ebs_r5n.zarr"
+println(path2cube);
+dc = Zarr.zopen(path2cube)
+@time for i = 1:n; dc["v"][r[i],c[i],:]; end
+println("--- using 4 threads ---");
+#@time Threads.@threads for i = 1:n; dc["v"][r[i],c[i],:]; end
+
+# read again but with multithreading
+function threaded_read(xin)
+    xout = similar(xin)
+    Threads.@threads for i in map(i->i.indices,Zarr.DiskArrays.eachchunk(xin))
+        xout[i...] = xin[i...]
+    end
+    xout
+end
+println("--- using 4 threads ---");
+
+v = dc["v"]
+@time for i = 1:n; threaded_read(view(v,r[i],c[i],:)); end
+
+
+
+#=
 path2cube = "http://its-live-data.s3.amazonaws.com/test_datacubes/forAlex/ITS_LIVE_vel_EPSG3413_G0120_X-150000_Y-2250000_rechunked_t_25730_xy_10_test.zarr" 
 #Cube sizes: (25730, 833, 833)
 #Chunk sizes: (25730, 10, 10)
@@ -24,6 +58,9 @@ path2cube = "http://its-live-data.s3.amazonaws.com/test_datacubes/forAlex/ITS_LI
 println(path2cube);
 dc = Zarr.zopen(path2cube)
 @time for i = 1:n; dc["v"][r[i],c[i],:]; end
+println("--- using 4 threads ---");
+@time Threads.@threads for i = 1:n; dc["v"][r[i],c[i],:]; end
+
 # 15.436011 seconds (749.70 k allocations: 571.617 MiB, 0.46% gc time, 2.00% compilation time)
 
 path2cube = "http://its-live-data.s3.amazonaws.com/test_datacubes/forAlex/ITS_LIVE_vel_EPSG3413_G0120_X-150000_Y-2250000_rechunked_t_25730_xy_5_test.zarr" 
@@ -39,7 +76,10 @@ path2cube = "http://its-live-data.s3.amazonaws.com/test_datacubes/forAlex/ITS_LI
 println(path2cube);
 dc = Zarr.zopen(path2cube)
 @time for i = 1:n; dc["v"][r[i],c[i],:]; end
-# 6.979865 seconds (11.25 k allocations: 136.609 MiB, 0.34% gc time)
+
+println("--- using 4 threads ---");
+@time Threads.@threads for i = 1:n; dc["v"][r[i],c[i],:]; end
+
 
 path2cube = "http://its-live-data.s3.amazonaws.com/test_datacubes/forAlex/ITS_LIVE_vel_EPSG3413_G0120_X-150000_Y-2250000_t_10K_xy_5_complete.zarr"
 #Cube sizes: (25730, 833, 833)
@@ -55,6 +95,10 @@ println(path2cube);
 dc = Zarr.zopen(path2cube)
 @time for i = 1:n; dc["v"][r[i],c[i],:]; end
 
+println("--- using 4 threads ---");
+@time Threads.@threads for i = 1:n; dc["v"][r[i],c[i],:]; end
+
+#=
 path2cube = "http://its-live-data.s3.amazonaws.com/test_datacubes/ITS_LIVE_vel_EPSG3413_G0120_X-150000_Y-2250000_t_10K_xy_10_complete.zarr"
 #Cube sizes: (25730, 833, 833)
 #Chunk sizes: (10000, 10, 10)
@@ -68,12 +112,37 @@ path2cube = "http://its-live-data.s3.amazonaws.com/test_datacubes/ITS_LIVE_vel_E
 println(path2cube);
 dc = Zarr.zopen(path2cube)
 @time for i = 1:n; dc["v"][r[i],c[i],:]; end
+=#
 
+path2cube = "http://its-live-data.s3.amazonaws.com/test_datacubes/forAlex/ITS_LIVE_vel_EPSG3413_G0120_X-150000_Y-2250000_t_25370_xy_10_create_ebs_r5n.zarr"
+#Cube sizes: (25730, 833, 833)
+#Chunk sizes: (10000, 10, 10)
+#Access v[1, 1]: 0.5651649210012692 seconds
+#Access v[5, 5]: 0.4418043139994552 seconds
+#Access v[400, 400]: 0.4450376610002422 seconds
+#Total Objects: 195402
+#Total Size: 12.9 GiB
+#S3 PUT price: $0.98
+#Runtime: 9 hours 20 mins
+println(path2cube);
+dc = Zarr.zopen(path2cube)
+@time for i = 1:n; dc["v"][r[i],c[i],:]; end
+
+# read again but with multithreading
+function threaded_read(xin)
+    xout = similar(xin)
+    Threads.@threads for i in map(i->i.indices,Zarr.DiskArrays.eachchunk(xin))
+        xout[i...] = xin[i...]
+    end
+    xout
+end
+println("--- using 4 threads ---");
+
+v = dc["v"]
+@time for i = 1:n; threaded_read(view(v,r[i],c[i],:)); end
+=#
 
 #=
-
-
-
 path2cube = "http://its-live-data.s3.amazonaws.com/datacubes/v02/N60W040/ITS_LIVE_vel_EPSG3413_G0120_X-150000_Y-2250000.zarr";
 println(path2cube);
 dc = Zarr.zopen(path2cube)

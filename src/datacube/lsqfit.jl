@@ -30,7 +30,7 @@ February 17, 2022
 """
 
 
-function lsqfit(v, v_err, mid_date, date_dt, mad_thresh::Number = 6, filt_iterations::Number = 1)
+function lsqfit(v, v_err, mid_date, date_dt, mad_thresh::Number = 6, filt_iterations::Number = 2)
 
 #=
 # add systimatic error based on level of co-registration
@@ -61,37 +61,30 @@ w_d = transpose(1. /( v_err .* dyr)) # Not squared because the p= line below wou
 
 d_obs = v.*dyr; # observed displacement in meters
 
-#=
-## Initial outlier detection and removal:
-# I've tried this entire function with or without this section, and it
-# doesn't seem to make much difference. It's actually fine to do
-# the whole analysis without detrending at all, but I'm leaving this here
-# for now anyways.
-# #
-# # # Define outliers as anything that's more than 10 standard deviations away from detrended vals.
-# # outliers = abs(v) > 10*std(v);
-# #
-# # # Remove them!
-# # yr = yr(~outliers,:);
-# # dyr = dyr(~outliers);
-# # d_obs = d_obs(~outliers);
-# # w_d = w_d(~outliers);
-# # w_v = w_v(~outliers);
-=#
-
-
-
-# apply an intitial w point running filter
+## pre filter data
 valid = .!outlier
 p = sortperm(mid_date[valid]);
+
+# moving window MAD filter seems much more robust
 w = 15;
+resid = zeros(size(p))
 vmed = FastRunningMedian.running_median((convert.(Float64, v[valid][p])),w)
-resid = abs.(v[valid][p] - vmed);
+resid[p] = abs.(v[valid][p] - vmed);
+
+# this is the original polynomial fit that seems to have issues when there is strong seasonality
+# yr_mid = (yr1+yr2)./2
+# ply = Polynomials.fit(yr_mid[valid][p],collect(skipmissing(v[valid][p])), 2)
+# resid = abs.(v[valid] .- ply.(yr_mid[valid]))
+
+# filter data ouside of threshold
 sigma = Statistics.median(resid)*1.4826;
+foo = view(outlier, valid)
+foo[resid .> (mad_thresh*2*sigma)] .= true # multiply threshold by 2 as this is a crude filter
 
-foo = @view outlier[valid];
-foo[p[resid .> (mad_thresh*2*sigma)]] .= true # multiply threshold by 2 as this is a crude filter
-
+# uncommnet following three lined to plot residules and outliers
+# plot(yr_mid[valid], resid, seriestype = :scatter, mc = :gray, labels="residuals")
+# pp = plot!(yr_mid[outlier[valid]], resid[outlier[valid]], seriestype = :scatter, mc = :red, labels="outliers")
+# display(pp)
 
 ## Make matrix of percentages of years corresponding to each displacement measurement
 D, tD, M = ITS_LIVE.design_matrix(t1, t2, "sinusoidal_interannual")
@@ -104,31 +97,26 @@ for i = 1:filt_iterations
     # Solve for coefficients of each column in the Vandermonde:
     p = (w_d[valid].*D[valid,:]) \ (w_d[valid].*d_obs[valid]);
 
-    ## Find and remove outliers    
-    d_model = sum(broadcast(*,D[valid,:],transpose(p)),dims=2); # modeled displacements (m)
-    
-    d_resid = abs.(d_obs[valid] - d_model)./dyr[valid]; # devide by dt to avoid penalizing long dt [asg]
-    
-    d_sigma = Statistics.median(d_resid)*1.4826; # robust standard deviation of errors, using median absolute deviation
+    if i < filt_iterations
+        ## Find and remove outliers    
+        d_model = sum(broadcast(*,D[valid,:],transpose(p)),dims=2); # modeled displacements (m)
+        
+        d_resid = abs.(d_obs[valid] - d_model)./dyr[valid]; # devide by dt to avoid penalizing long dt [asg]
+        
+        d_sigma = Statistics.median(d_resid)*1.4826; # robust standard deviation of errors, using median absolute deviation
 
-    # valid = vec(d_resid .<= (mad_thresh*d_sigma));
-    outlier[valid] = vec(d_resid .> (mad_thresh*d_sigma))
+        # valid = vec(d_resid .<= (mad_thresh*d_sigma));
+        outlier[valid] = vec(d_resid .> (mad_thresh*d_sigma))
 
-    ## Remove no-data columns from M:
-    #hasdata = vec(sum(M, dims = 1).>1);
-    #yr = yr[hasdata];
-    #M = M[:,hasdata];
+        ## Remove no-data columns from M:
+        #hasdata = vec(sum(M, dims = 1).>1);
+        #yr = yr[hasdata];
+        #M = M[:,hasdata];
+    end
 end
-
-
-D, tD, M = ITS_LIVE.design_matrix(t1, t2, "sinusoidal_interannual")
-yr = ITS_LIVE.decimalyear(tD)
 
 valid = .!outlier
 fit_outlier_frac = sum(valid)./length(valid);
-
-# Solve for coefficients of each column in the Vandermonde:
-p = (w_d[valid].*D[valid,:]) \ (w_d[valid].*d_obs[valid]);
 
 ## Postprocess
 
