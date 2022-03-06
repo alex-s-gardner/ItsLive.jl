@@ -33,7 +33,7 @@ dc = Zarr.zopen(catalogdf[1,"zarr_url"]).arrays
 
 # retrieve data columns from Zarr as a named matrix of vectors
 varnames = ["mid_date", "date_dt", "vx", "vx_error", "vy", "vy_error","satellite_img1"]
-@time C = ITS_LIVE.getvar(lat,lon,varnames ,catalogdf)
+@time C = ITS_LIVE.getvar(lat,lon,varnames, catalogdf)
 
 # filter data and plot
 Plots.PyPlotBackend()

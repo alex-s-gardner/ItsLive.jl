@@ -63,7 +63,7 @@ vind = Vector{Int64}()
 
 # select variable to extract
 # varnames = ["vx"]
-Threads.@threads for row in urows
+for row in urows
     # check if row is "missing"
     if ismissing(row)
         ind0 = findall(ismissing.(rows))
@@ -96,7 +96,7 @@ Threads.@threads for row in urows
     # extract timeseries from datacube
 
     # loop for each r and c
-    for j = 1:lastindex(varnames)
+    Threads.@threads for j = 1:lastindex(varnames)
 
         if ndims(dc[varnames[j]]) == 1
             foo = dc[varnames[j]][:]
@@ -137,7 +137,6 @@ vout = hcat(lat,lon,vout)
 # add naming to matrix
 vout = NamedArrays.NamedArray(vout)
 NamedArrays.setnames!(vout, vcat("lat","lon",varnames), 2)
-
 
 # find datetime variables and convert 
 datevarnames = ["acquisition_date_img2", "acquisition_date_img1", "date_center", "mid_date"]
