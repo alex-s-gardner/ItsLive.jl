@@ -13,6 +13,7 @@ using BSplineKit
 using FastRunningMedian
 using Polynomials
 using Plots
+using NearestNeighbors
 
 include("datacube/catalog.jl")
 include("datacube/intersect.jl")
@@ -22,6 +23,7 @@ include("datacube/dtfilter.jl")
 include("datacube/vxvyfilter.jl")
 include("datacube/decimalyear.jl")
 include("datacube/lsqfit.jl")
+include("datacube/lsqfit_itslive.jl")
 include("datacube/lsqfit_interp.jl")
 include("datacube/design_matrix.jl")
 include("datacube/annual_matrix.jl")

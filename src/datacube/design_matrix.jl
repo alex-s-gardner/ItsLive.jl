@@ -38,10 +38,9 @@ function design_matrix(t1::Vector{DateTime}, t2::Vector{DateTime}, model::String
     M = M[:,hasdata];
 
     if model == "interannual"
-        M[ M.> 0] .= 1;
-        D = hcat(M, ones(size(yr1)));
+        D = M; #hcat(M);
     elseif model == "sinusoidal"
-        D = hcat((cos.(2*pi*yr1) - cos.(2*pi*yr2)) ./ (2*pi), (sin.(2*pi*yr2) - sin.(2*pi*yr1))./(2*pi), M, ones(size(yr1)));
+        D = hcat((cos.(2*pi*yr1) - cos.(2*pi*yr2)) ./ (2*pi), (sin.(2*pi*yr2) - sin.(2*pi*yr1))./(2*pi), M);
     else
         # Displacement Design matrix: (these are displacements! not velocities, so this matrix is just the definite integral wrt time of a*sin(2*pi*yr)+b*cos(2*pi*yr)+c.
         N = ((sin.(2*pi*yr2) - sin.(2*pi*yr1))./(2*pi));
