@@ -204,7 +204,7 @@ v = vec(v.+v0)
 =#
 
 valid = .!outlier
-fit_outlier_frac = sum(valid)./length(valid);
+fit_outlier_frac = 1 -(sum(valid)./length(valid));
 
 # Goodness of fit:
 d_model = sum(broadcast(*,D,transpose(p)),dims=2);

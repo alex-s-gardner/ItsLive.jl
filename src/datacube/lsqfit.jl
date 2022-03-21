@@ -120,7 +120,7 @@ for i = 1:iterations
 end
 
 valid = .!outlier
-fit_outlier_frac = sum(valid)./length(valid);
+fit_outlier_frac = 1 -(sum(valid)./length(valid));
 
 # Goodness of fit:
 d_model = sum(broadcast(*,D,transpose(p)),dims=2);
@@ -178,7 +178,7 @@ end
 # Number of equivalent image pairs per year: (1 image pair equivalent means a full year of data. It takes about 23 16-day image pairs to make 1 year equivalent image pair.)
 fit_count = sum(M[valid,:].>0, dims=1);
 
-v_fit_err =  transpose(1 ./ sqrt.(sum(w_v[valid].*M[valid,:], dims=1)));
+v_fit_err =  vec(1 ./ sqrt.(sum(w_v[valid].*M[valid,:], dims=1)));
 
 # as per convention, set missing values as non outliers 
 outlier[ismissing.(vec(v))] .= false

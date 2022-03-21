@@ -69,17 +69,31 @@ end
 i = 1;|
 valid = (.!ismissing.(C[i,"vx"])) .& (.!outlier[i])
 model = "sinusoidal"
-tx_fit, vx_fit, ampx_fit, phasex_fit, vx_fit_err, ampx_fit_err, fitx_count, fitx_outlier_frac, outlier[i][valid] = 
+tx_fit, vx_fit, vx_amp, vx_phase, vx_fit_err, vx_amp_err, vx_fit_count, vx_fit_outlier_frac, outlier[i][valid] = 
     ITS_LIVE.lsqfit(C[i,"vx"][valid],C[i,"vx_error"][valid],C[i,"mid_date"][valid],C[i,"date_dt"][valid]; model = model);
+
+ty_fit, vy_fit, vy_amp, vy_phase, vy_fit_err, vy_amp_err, vy_fit_count, vy_fit_outlier_frac, outlier[i][valid] = 
+    ITS_LIVE.lsqfit(C[i,"vy"][valid],C[i,"vy_error"][valid],C[i,"mid_date"][valid],C[i,"date_dt"][valid]; model = model);
+
+# solve for velocity in in 2017.5 and velocity trend
+vx0, dvx_dt, vx0_se = ITS_LIVE.wlinearfit(tx_fit, vx_fit, vx_fit_err, DateTime(2017,7,1))
+vy0, dvy_dt, vy0_se = ITS_LIVE.wlinearfit(ty_fit, vy_fit, vy_fit_err, DateTime(2017,7,1))
+
+# compute velocity magnitude metrics from component values
+v_fit, v_fit_err, v_fit_count, v_fit_outlier_frac  = ITS_LIVE.annual_magnitude(vx0, vy0, vx_fit, vy_fit, vx_fit_err, vy_fit_err, vx_fit_count, vy_fit_count, vx_fit_outlier_frac, vy_fit_outlier_frac)
+v, dv_dt, v_amp, v_amp_err, v_phase = ITS_LIVE.climatology_magnitude(vx0, vy0, dvx_dt, dvy_dt, vx_amp, vy_amp, vx_amp_err, vy_amp_err, vx_phase, vy_phase)
 
 # interpoalte model in time 
 t_i = DateTime.(DateFormats.YearDecimal.(2013:0.1:2022))
-vx_i, vx_i_err = ITS_LIVE.lsqfit_interp(tx_fit, vx_fit, ampx_fit, phasex_fit, vx_fit_err, ampx_fit_err, t_i; interp_method = "BSpline"); # need to fix extraploaltion at some point
+vx_i, vx_i_err = ITS_LIVE.lsqfit_interp(tx_fit, vx_fit, vx_amp, vx_phase, vx_fit_err, vx_amp_err, t_i; interp_method = "BSpline"); # need to fix extraploaltion at some point
+vy_i, vy_i_err = ITS_LIVE.lsqfit_interp(ty_fit, vy_fit, vy_amp, vy_phase, vy_fit_err, vy_amp_err, t_i; interp_method = "BSpline"); # need to fix extraploaltion at some point
 
 # plot data and fit
 p = plot(C[i,"mid_date"][outlier[i]], C[i,"vx"][outlier[i]], seriestype = :scatter, mc = :gray)
 p = plot!(C[i,"mid_date"][.!outlier[i]], C[i,"vx"][.!outlier[i]], seriestype = :scatter)
 p = plot!(t_i, vx_i)
+
+
 
 # write data to a .csv
 #=

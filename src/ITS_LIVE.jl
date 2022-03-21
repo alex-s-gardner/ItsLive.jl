@@ -27,5 +27,9 @@ include("datacube/lsqfit_itslive.jl")
 include("datacube/lsqfit_interp.jl")
 include("datacube/design_matrix.jl")
 include("datacube/annual_matrix.jl")
+include("datacube/wlinearfit.jl")
+include("datacube/running_mean.jl")
+include("datacube/annual_magnitude.jl")
+include("datacube/climatology_magnitude.jl")
 
 end # module

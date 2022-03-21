@@ -28,4 +28,11 @@ This filter is needed to identify longer dts that exhibit "skipping" or "locking
 
 **`v_i, v_i_err = lsqfit_interp(t_fit, v_fit, amp_fit, phase_fit, v_fit_err, amp_fit_err, t_i)`** evaluates the outputs of `lsqfit` at times `t_i`, outputting velocity (`v_i`) and velocity error (`v_i_err`) at times `t_i`.
 
+**`v0 = running_mean(v, w)`** calculates the running mean of `v` with window size of `w`
+
+**`offset, slope, se = wliearfit(t, v, v_err, datetime0)`** returns the `offset`, `slope`, and standard error (`se`) for a weighted linear fit to `v` with a y-intercept of `datetime0`
+
+ **`v, dv_dt, v_amp, v_amp_err, v_phase = climatology_magnitude(vx0, vy0, dvx_dt, dvy_dt, vx_amp, vy_amp, vx_amp_err, vy_amp_err, vx_phase, vy_phase)`** returns the mean (`v`), trend (`dv_dt`), seasonal amplitude (`v_amp`), error in seasonal amplitude (`v_amp_err`), and seasonal phase (`v_phase`) from component values projected on the unit flow vector defined by vx0 and vy0
+
+  **`v_fit, v_fit_err, v_fit_count, v_fit_outlier_frac  = annual_magnitude(vx0, vy0, vx_fit, vy_fit, vx_fit_err, vy_fit_err, vx_fit_count, vy_fit_count, vx_fit_outlier_frac, vy_fit_outlier_frac)`** returns the annual mean (`v_fit`), error (`v_fit_err`), count(`v_fit_count`), and outlier fraction (`v_fit_outlier_frac`) from component values projected on the unit flow  vector defined by vx0 and vy0
 

@@ -62,7 +62,7 @@ if interp_method == "Nearest"
 end
 
 # convert phase to fraction of a year and adjust from peak to phase
-phase_fit = phase_fit./365.25 .- 0.25;
+phase_fit = -phase_fit./365.25 + 0.25
 
 if ismissing(amp_fit)
    # model == "interannual"
@@ -102,8 +102,8 @@ elseif length(amp_fit) == length(valid)
 
 elseif isa(amp_fit, Number)
    # model == "sinusoidal"
-   amp_fit = convert.(Float64, amp_fit)
-   phase_fit = convert.(Float64, phase_fit)
+   #amp_fit = convert.(Float64, amp_fit)
+   #phase_fit = convert.(Float64, phase_fit)
 
    v_seas = amp_fit .* sin.((t_i .+ phase_fit)*2*pi); 
 end

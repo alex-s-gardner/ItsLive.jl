@@ -35,3 +35,11 @@ function decimalyear(dt::Union{DateTime, Vector{DateTime}})
     decimalyr = YearDecimal2Float64(yr1)
     return decimalyr
 end
+
+function decimalyear(dt::DateTime)
+
+    decimalyr = DateFormats.YearDecimal.(dt)
+    decimalyr = decimalyr.value 
+
+   return decimalyr
+end
