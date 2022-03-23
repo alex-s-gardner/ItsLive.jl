@@ -1,11 +1,11 @@
 """
     wliearfit(t, v, v_err, datetime0)
 
-returns the offset, slope, and se for a weighted linear fit to v with an intercept of datetime0
+returns the offset, slope, and error for a weighted linear fit to v with an intercept of datetime0
 
 # Example no inputs
 ```julia
-julia> offset, slope, se = wliearfit(t, v, v_err, datetime0)
+julia> offset, slope, error = wliearfit(t, v, v_err, datetime0)
 ```
 
 # Arguments
@@ -39,9 +39,8 @@ function wlinearfit(t::Vector{DateTime}, v::Vector{Float64} , v_err::Vector{Floa
     valid = .!ismissing.(v)
     offset, slope = (w_v[valid].*D[valid,:]) \ (w_v[valid].*v[valid]);
 
-    # RMSE from fit
-    res = v .- (yr.*slope .+ offset);
-    se = sqrt(sum(res.^2) ./ (sum(valid)-1))
+    # fit error
+    error = sqrt(sum(v_err[valid].^2))/(sum(valid)-1)
 
-    return offset, slope, se
+    return offset, slope, error
 end 

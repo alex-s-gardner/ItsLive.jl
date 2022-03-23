@@ -76,12 +76,12 @@ ty_fit, vy_fit, vy_amp, vy_phase, vy_fit_err, vy_amp_err, vy_fit_count, vy_fit_o
     ITS_LIVE.lsqfit(C[i,"vy"][valid],C[i,"vy_error"][valid],C[i,"mid_date"][valid],C[i,"date_dt"][valid]; model = model);
 
 # solve for velocity in in 2017.5 and velocity trend
-vx0, dvx_dt, vx0_se = ITS_LIVE.wlinearfit(tx_fit, vx_fit, vx_fit_err, DateTime(2017,7,1))
-vy0, dvy_dt, vy0_se = ITS_LIVE.wlinearfit(ty_fit, vy_fit, vy_fit_err, DateTime(2017,7,1))
+vx0, dvx_dt, vx0_err = ITS_LIVE.wlinearfit(tx_fit, vx_fit, vx_fit_err, DateTime(2017,7,1))
+vy0, dvy_dt, vy0_err = ITS_LIVE.wlinearfit(ty_fit, vy_fit, vy_fit_err, DateTime(2017,7,1))
 
 # compute velocity magnitude metrics from component values
 v_fit, v_fit_err, v_fit_count, v_fit_outlier_frac  = ITS_LIVE.annual_magnitude(vx0, vy0, vx_fit, vy_fit, vx_fit_err, vy_fit_err, vx_fit_count, vy_fit_count, vx_fit_outlier_frac, vy_fit_outlier_frac)
-v, dv_dt, v_amp, v_amp_err, v_phase = ITS_LIVE.climatology_magnitude(vx0, vy0, dvx_dt, dvy_dt, vx_amp, vy_amp, vx_amp_err, vy_amp_err, vx_phase, vy_phase)
+v0, v0_err, dv0_dt, v0_amp, v0_amp_err, v0_phase = ITS_LIVE.climatology_magnitude(vx0, vy0, vx0_err, vy0_err, dvx_dt, dvy_dt, vx_amp, vy_amp, vx_amp_err, vy_amp_err, vx_phase, vy_phase)
 
 # interpoalte model in time 
 t_i = DateTime.(DateFormats.YearDecimal.(2013:0.1:2022))
