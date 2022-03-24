@@ -29,6 +29,7 @@ Zarr = "0a941bbe-ad1d-11e8-39d9-ab76183a1d99"
 
 
 [compat]
+julia = "^1.7.0"
 AWS = "^1.74.0"
 ArchGDAL = "^0.7.4"
 BSplineKit = "^0.8.3"
