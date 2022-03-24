@@ -25,13 +25,13 @@ January 1, 2022
 
 function design_matrix(t1::Vector{DateTime}, t2::Vector{DateTime}, model::String = "sinusoidal_interannual")
     # Convert datenums to decimal years:
-    yr1 = ITS_LIVE.decimalyear(t1)
-    yr2 = ITS_LIVE.decimalyear(t2)
+    yr1 = ItsLive.decimalyear(t1)
+    yr2 = ItsLive.decimalyear(t2)
 
     if (model == "sinusoidal_interannual") || (model == "sinusoidal") || (model == "interannual")
 
-    M, tM = ITS_LIVE.annual_matrix(t1,t2)
-    yr = ITS_LIVE.decimalyear(tM)
+    M, tM = ItsLive.annual_matrix(t1,t2)
+    yr = ItsLive.decimalyear(tM)
 
     hasdata = vec(sum(M,dims=1).>0);
     yr = yr[hasdata];

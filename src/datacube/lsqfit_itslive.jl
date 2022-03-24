@@ -45,8 +45,8 @@ t1 = mid_date .- (Dates.Second.(round.(Int64,date_dt .* 86400 ./2)))
 t2 = mid_date .+ (Dates.Second.(round.(Int64,date_dt .* 86400 ./2)))
 
 # Convert datenums to decimal years:
-yr1 = ITS_LIVE.decimalyear(t1)
-yr2 = ITS_LIVE.decimalyear(t2)
+yr1 = ItsLive.decimalyear(t1)
+yr2 = ItsLive.decimalyear(t2)
 yr = floor(minimum(yr1)):floor(maximum(yr2));
 Nyrs = length(yr);
 
@@ -107,7 +107,7 @@ end
 # Iterative mad filter []
 model = "sinusoidal_interannual"
 ## Make matrix of percentages of years corresponding to each displacement measurement
-D, tD, M = ITS_LIVE.design_matrix(t1, t2, model)
+D, tD, M = ItsLive.design_matrix(t1, t2, model)
 p = zeros(length(yr)*3, 1)
 
 #=
@@ -155,7 +155,7 @@ if any(.!valid_sinter[1:length(yr)])
     valid_sin = vcat(BitVector([true, true]), .!valid_sinter[1:length(yr)]);
 
     ## Make matrix of percentages of years corresponding to each displacement measurement
-    D2, tD, M = ITS_LIVE.design_matrix(t1, t2, model)
+    D2, tD, M = ItsLive.design_matrix(t1, t2, model)
     p2 = 0;
     for i = 1:iterations
         valid = .!outlier

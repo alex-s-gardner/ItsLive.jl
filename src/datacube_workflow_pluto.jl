@@ -15,21 +15,21 @@ macro bind(def, element)
 end
 
 # ╔═╡ 214a6be6-dbe6-4281-97ef-ab5fd35b7e50
-# import package manager, load packages, activate ITS_LIVE, and set plotting backend
+# import package manager, load packages, activate ItsLive, and set plotting backend
 # [~30s]
 begin
 	import Pkg
 	Pkg.activate(".")
-	Pkg.activate("/Users/gardnera/Documents/GitHub/ITS_LIVE.jl/Project.toml")
-	include("/Users/gardnera/Documents/GitHub/ITS_LIVE.jl")
-	using ITS_LIVE, Zarr, Plots, Dates, DateFormats, PlutoUI
+	Pkg.activate("/Users/gardnera/Documents/GitHub/ItsLive.jl/Project.toml")
+	include("/Users/gardnera/Documents/GitHub/ItsLive.jl")
+	using ItsLive, Zarr, Plots, Dates, DateFormats, PlutoUI
 	Plots.PyPlotBackend()
 end
 
 # ╔═╡ 03d598ee-a11a-473f-9352-d9b813bddaa5
 # load in ITS_LIVE datacube catalog as a Julia DataFrame
 # [~5s]
-catalogdf = ITS_LIVE.catalog();
+catalogdf = ItsLive.catalog();
 
 # ╔═╡ ce4eb188-d8e1-4214-b0e2-5b3301e4ab38
 @bind lat NumberField(-90:0.0001:90, default=60.048110121383285)
@@ -50,7 +50,7 @@ catalogdf = ITS_LIVE.catalog();
 begin
 	varnames = ["mid_date", "date_dt", "vx", "vx_error", 
 		"vy", "vy_error","satellite_img1"];
-	C = ITS_LIVE.getvar(lat,lon,varnames, catalogdf);
+	C = ItsLive.getvar(lat,lon,varnames, catalogdf);
 end
 
 # ╔═╡ a75a94b9-c143-4330-b644-4315782aaf22
@@ -65,7 +65,7 @@ end
 begin
 	i = 1
 	outlie0, dtmax0, sensorgroups = 
-		ITS_LIVE.vxvyfilter(C[i,"vx"],C[i,"vy"],C[i,"date_dt"], 
+		ItsLive.vxvyfilter(C[i,"vx"],C[i,"vy"],C[i,"date_dt"], 
 			C[i,"satellite_img1"]);
     push!(outlier, outlie0);
     push!(dtmax, dtmax0);
@@ -95,21 +95,21 @@ begin
 	model = "sinusoidal";
 	tx_fit, vx_fit, vx_amp, vx_phase, vx_fit_err, vx_amp_err, vx_fit_count,
 	vx_fit_outlier_frac, outlier[i][valid] = 
-		ITS_LIVE.lsqfit(C[i,"vx"][valid],C[i,"vx_error"][valid],
+		ItsLive.lsqfit(C[i,"vx"][valid],C[i,"vx_error"][valid],
 			C[i,"mid_date"][valid],C[i,"date_dt"][valid]; model = model);
 	
 	ty_fit, vy_fit, vy_amp, vy_phase, vy_fit_err, vy_amp_err, vy_fit_count,
 	vy_fit_outlier_frac, outlier[i][valid] = 
-		ITS_LIVE.lsqfit(C[i,"vy"][valid],C[i,"vy_error"][valid],
+		ItsLive.lsqfit(C[i,"vy"][valid],C[i,"vy_error"][valid],
 			C[i,"mid_date"][valid],C[i,"date_dt"][valid]; model = model);
 end
 
 # ╔═╡ c830c54b-f7e4-4ed0-acdf-9787dc08fd40
 # solve for velocity in in 2017.5 and velocity trend
 begin
-	vx0, dvx_dt, vx0_se = ITS_LIVE.wlinearfit(tx_fit, vx_fit, vx_fit_err,
+	vx0, dvx_dt, vx0_se = ItsLive.wlinearfit(tx_fit, vx_fit, vx_fit_err,
 		DateTime(2017,7,2));
-	vy0, dvy_dt, vy0_se = ITS_LIVE.wlinearfit(ty_fit, vy_fit, vy_fit_err,
+	vy0, dvy_dt, vy0_se = ItsLive.wlinearfit(ty_fit, vy_fit, vy_fit_err,
 		DateTime(2017,7,2));
 end
 
@@ -117,10 +117,10 @@ end
 # compute velocity magnitude metrics from component values
 begin
 	v_fit, v_fit_err, v_fit_count, v_fit_outlier_frac  = 
-		ITS_LIVE.annual_magnitude(vx0, vy0, vx_fit, vy_fit, vx_fit_err, 
+		ItsLive.annual_magnitude(vx0, vy0, vx_fit, vy_fit, vx_fit_err, 
 			vy_fit_err, vx_fit_count, vy_fit_count, vx_fit_outlier_frac, 
 			vy_fit_outlier_frac);
-	v, v_se, dv_dt, v_amp, v_amp_err, v_phase = ITS_LIVE.climatology_magnitude(vx0,
+	v, v_se, dv_dt, v_amp, v_amp_err, v_phase = ItsLive.climatology_magnitude(vx0,
 		vy0, vx0_se, vy0_se, dvx_dt, dvy_dt, vx_amp, vy_amp, vx_amp_err, vy_amp_err,
 		vx_phase, vy_phase);
 end
@@ -129,10 +129,10 @@ end
 # interpoalte model in time 
 begin
 	t_i = DateTime.(DateFormats.YearDecimal.(2013:0.1:2022))
-	vx_i, vx_i_err = ITS_LIVE.lsqfit_interp(tx_fit, vx_fit, vx_amp, vx_phase,
+	vx_i, vx_i_err = ItsLive.lsqfit_interp(tx_fit, vx_fit, vx_amp, vx_phase,
 		vx_fit_err, vx_amp_err, t_i; interp_method = "BSpline"); 
 	
-	vy_i, vy_i_err = ITS_LIVE.lsqfit_interp(ty_fit, vy_fit, vy_amp, vy_phase,
+	vy_i, vy_i_err = ItsLive.lsqfit_interp(ty_fit, vy_fit, vy_amp, vy_phase,
 		vy_fit_err, vy_amp_err, t_i; interp_method = "BSpline"); 
 end
 

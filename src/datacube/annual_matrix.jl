@@ -23,8 +23,8 @@ January 1, 2022
 """
 function annual_matrix(t1::Vector{DateTime}, t2::Vector{DateTime})
     # Convert datenums to decimal years:
-    yr1 = ITS_LIVE.decimalyear(t1)
-    yr2 = ITS_LIVE.decimalyear(t2)
+    yr1 = ItsLive.decimalyear(t1)
+    yr2 = ItsLive.decimalyear(t2)
     
     # make annual weighting matrix for discrete intervals
     # unique years

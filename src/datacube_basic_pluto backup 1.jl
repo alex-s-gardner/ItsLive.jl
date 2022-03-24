@@ -15,21 +15,21 @@ macro bind(def, element)
 end
 
 # ╔═╡ 214a6be6-dbe6-4281-97ef-ab5fd35b7e50
-# import package manager, load packages, activate ITS_LIVE, and set plotting backend
+# import package manager, load packages, activate ItsLive, and set plotting backend
 # [~30s]
 begin
 	import Pkg
 	Pkg.activate(".")
-	Pkg.activate("/Users/gardnera/Documents/GitHub/ITS_LIVE.jl/Project.toml")
-	include("/Users/gardnera/Documents/GitHub/ITS_LIVE.jl")
-	using ITS_LIVE, Zarr, Plots, Dates, DateFormats, PlutoUI
+	Pkg.activate("/Users/gardnera/Documents/GitHub/ItsLive.jl/Project.toml")
+	include("/Users/gardnera/Documents/GitHub/ItsLive.jl")
+	using ItsLive, Zarr, Plots, Dates, DateFormats, PlutoUI
 	Plots.PyPlotBackend()
 end
 
 # ╔═╡ 03d598ee-a11a-473f-9352-d9b813bddaa5
-# load in ITS_LIVE datacube catalog as a Julia DataFrame
+# load in ItsLive datacube catalog as a Julia DataFrame
 # [~5s]
-catalogdf = ITS_LIVE.catalog();
+catalogdf = ItsLive.catalog();
 
 # ╔═╡ ce4eb188-d8e1-4214-b0e2-5b3301e4ab38
 @bind lat NumberField(-90:0.0001:90, default=60.048110121383285)
@@ -49,7 +49,7 @@ catalogdf = ITS_LIVE.catalog();
 # [~17s]
 begin
 	varnames = ["mid_date", "v"];
-	C = ITS_LIVE.getvar(lat,lon,varnames, catalogdf);
+	C = ItsLive.getvar(lat,lon,varnames, catalogdf);
 end
 
 # ╔═╡ e02c67c1-4e18-4738-a4bd-60264a5e017d

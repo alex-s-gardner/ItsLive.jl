@@ -1,7 +1,7 @@
 """
 lsqfit_interp(t_fit, v_fit, amp_fit, phase_fit, v_fit_err, amp_fit_err, t_i)
 
-creates a continuous time series of velocity from the outputs of ITS_LIVE.lsqfit.
+creates a continuous time series of velocity from the outputs of ItsLive.lsqfit.
 
 
 # Example
@@ -33,8 +33,8 @@ function lsqfit_interp(t_fit, v_fit, amp_fit, phase_fit, v_fit_err, amp_fit_err,
 SplineOrder = 3;
 
 # convert date to decimal years
-t_fit = ITS_LIVE.decimalyear(t_fit)
-t_i = ITS_LIVE.decimalyear(t_i)
+t_fit = ItsLive.decimalyear(t_fit)
+t_i = ItsLive.decimalyear(t_i)
 
 valid = (.~ismissing.(t_fit)) .& (.~ismissing.(v_fit)) 
 t_fit = convert.(Float64, t_fit[valid])

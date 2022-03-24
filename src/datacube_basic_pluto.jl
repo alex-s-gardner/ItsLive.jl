@@ -17,13 +17,13 @@ end
 # ╔═╡ 214a6be6-dbe6-4281-97ef-ab5fd35b7e50
 begin
 	md"""
-	**Load packages, activate ITS_LIVE [~30s]:**
+	**Load packages, activate ItsLive [~30s]:**
 	"""
 	import Pkg
 	Pkg.activate(".")
-	Pkg.activate("/Users/gardnera/Documents/GitHub/ITS_LIVE.jl/Project.toml")
-	include("/Users/gardnera/Documents/GitHub/ITS_LIVE.jl")
-	using ITS_LIVE, Zarr, Plots, Dates, DateFormats, PlutoUI
+	Pkg.activate("/Users/gardnera/Documents/GitHub/ItsLive.jl/Project.toml")
+	include("/Users/gardnera/Documents/GitHub/ItsLive.jl")
+	using ItsLive, Zarr, Plots, Dates, DateFormats, PlutoUI
 	Plots.PyPlotBackend()
 end
 
@@ -39,7 +39,7 @@ A simple Pluto notebook showing how to use the basic functionality of the ITS\_L
 # ╔═╡ 03d598ee-a11a-473f-9352-d9b813bddaa5
 # load in ITS_LIVE datacube catalog as a Julia DataFrame
 # [~5s]
-catalogdf = ITS_LIVE.catalog();
+catalogdf = ItsLive.catalog();
 
 # ╔═╡ f0a6d6d5-6557-4585-a176-e58494d85758
 begin
@@ -62,7 +62,7 @@ end
 # retrieve and plot data
 begin
 	# retrieve data from datacube sitting in the AWS cloud
-	C = ITS_LIVE.getvar(lat,lon,["mid_date", var], catalogdf)
+	C = ItsLive.getvar(lat,lon,["mid_date", var], catalogdf)
 	# exclude missing data
     valid =  .!ismissing.(C[1,var]);
 	# plot data

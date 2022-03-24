@@ -50,7 +50,7 @@ if ~isa(lat, Array)
 end
 
 # find the DataFrame rows of the datacube that intersect a series of lat/lon points
-rows = ITS_LIVE.intersect.(lat,lon, Ref(catalogdf))
+rows = ItsLive.intersect.(lat,lon, Ref(catalogdf))
 
 # find all unique datacubes (mutiple points can intersect the same cube)
 urows = unique(rows)
@@ -89,7 +89,7 @@ for row in urows
 
     # find closest point 
     # NOTE: in Zarr cube "x" changes along rows (r) and "y" changes along columns (c)
-    r, c = ITS_LIVE.nearestxy(lat[ind0], lon[ind0], dc)
+    r, c = ItsLive.nearestxy(lat[ind0], lon[ind0], dc)
     rind[ind0] .= r
     cind[ind0] .= c
     

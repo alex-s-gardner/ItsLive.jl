@@ -23,8 +23,8 @@ March 17, 2022
 
 function wlinearfit(t::Vector{DateTime}, v::Vector{Float64} , v_err::Vector{Float64} , datetime0::DateTime)
 
-    yr = ITS_LIVE.decimalyear(t)
-    yr0 = ITS_LIVE.decimalyear(datetime0)
+    yr = ItsLive.decimalyear(t)
+    yr0 = ItsLive.decimalyear(datetime0)
 
     yr = yr .- yr0;
 

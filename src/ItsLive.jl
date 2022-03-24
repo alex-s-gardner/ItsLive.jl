@@ -1,4 +1,4 @@
-module ITS_LIVE
+module ItsLive
 
 import DataFrames
 import ArchGDAL
