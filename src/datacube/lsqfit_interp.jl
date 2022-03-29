@@ -82,9 +82,9 @@ elseif length(amp_fit) == length(valid)
       tmpy = amp_fit.*sin.(phase_fit*2*pi);
       
       # apply smooth interpoaltion in cartesian space
-      itpx = BSplineKit.interpolate(t_fit, tmpx, BSplineOrder(SplineOrder))
+      itpx = BSplineKit.interpolate(t_fit, tmpx, BSplineKit.BSplineOrder(SplineOrder))
       tmpxi = itpx.(t_i)
-      itpy = BSplineKit.interpolate(t_fit,tmpy, BSplineOrder(SplineOrder))
+      itpy = BSplineKit.interpolate(t_fit,tmpy, BSplineKit.BSplineOrder(SplineOrder))
       tmpyi = itpy.(t_i)  
 
       # Convert back to "polar" coordinates 
@@ -110,7 +110,7 @@ end
 
 # interpolate discrete data using cubic splines (B-spline order k = 4)
 if interp_method == "BSpline"
-    itp = BSplineKit.interpolate(t_fit, v_fit, BSplineOrder(SplineOrder))
+    itp = BSplineKit.interpolate(t_fit, v_fit, BSplineKit.BSplineOrder(SplineOrder))
     v_fit_i = itp.(t_i)  
 elseif interp_method == "Nearest"
     v_fit_i = v_fit[idx]
@@ -119,7 +119,7 @@ end
 v_i = v_fit_i .+ v_seas; 
 
 # compute error
-itp = BSplineKit.interpolate(t_fit, vec(hypot.(v_fit_err, amp_fit_err)), BSplineOrder(SplineOrder))
+itp = BSplineKit.interpolate(t_fit, vec(hypot.(v_fit_err, amp_fit_err)), BSplineKit.BSplineOrder(SplineOrder))
 v_i_err = itp.(t_i)  
 
 return v_i, v_i_err

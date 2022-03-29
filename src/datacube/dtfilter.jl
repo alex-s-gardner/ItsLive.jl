@@ -24,7 +24,8 @@ Jet Propulsion Laboratory, California Institute of Technology, Pasadena, Califor
 February 10, 2022
 """
 
-function dtfilter(x, dt , binedges::Vector{Float64} = [0, 32, 64, 128, 256, 1E10], dtbin_mad_thresh::Number = 2)
+function dtfilter(x, dt , binedges::Vector{Float64} = [0, 16, 32, 64, 128, 256, 1E10], 
+    dtbin_mad_thresh::Number = 0.5)
 
 
     ## define internal functions 
@@ -71,13 +72,15 @@ function dtfilter(x, dt , binedges::Vector{Float64} = [0, 32, 64, 128, 256, 1E10
             binMed[i] = foo[1]
             binMad[i] = foo[2]
     end
-
+    
     # check if populations overlap (use first, smallest dt, bin as reference)
     minBound = binMed - (binMad * dtbin_mad_thresh * 1.4826);
     maxBound = binMed + (binMad * dtbin_mad_thresh * 1.4826);
 
     # check if distributions overlap
     exclude = (minBound .> maxBound[1]) .| (maxBound .< minBound[1]);
+    println("$minBound")
+    println("$maxBound")
 
     if !any(exclude)
         dtmax = (2^15 - 1)

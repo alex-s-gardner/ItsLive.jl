@@ -13,6 +13,11 @@ using FastRunningMedian
 using Polynomials
 using Plots
 using NearestNeighbors
+using Statistics
+
+include("general/binstats.jl")
+include("general/running_mean.jl")
+include("general/decimalyear.jl")
 
 include("datacube/catalog.jl")
 include("datacube/intersect.jl")
@@ -20,15 +25,16 @@ include("datacube/nearestxy.jl")
 include("datacube/getvar.jl")
 include("datacube/dtfilter.jl")
 include("datacube/vxvyfilter.jl")
-include("datacube/decimalyear.jl")
 include("datacube/lsqfit.jl")
 include("datacube/lsqfit_itslive.jl")
 include("datacube/lsqfit_interp.jl")
 include("datacube/design_matrix.jl")
 include("datacube/annual_matrix.jl")
 include("datacube/wlinearfit.jl")
-include("datacube/running_mean.jl")
 include("datacube/annual_magnitude.jl")
 include("datacube/climatology_magnitude.jl")
-
-end # module
+include("datacube/sensorgroup.jl")
+include("datacube/plotbysensor.jl")
+include("datacube/sensorfilter.jl")
+include("datacube/plotvar.jl")
+end # modulepl  

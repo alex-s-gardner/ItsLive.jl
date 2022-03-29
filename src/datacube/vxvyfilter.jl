@@ -1,5 +1,5 @@
 """
-    vxvyfilter(vx,vy,dt,sensor)
+    vxvyfilter(vx,vy,dt; sensor)
 
 remove data for which the vx or vy distibution changes for longer dts
 
@@ -24,46 +24,80 @@ Jet Propulsion Laboratory, California Institute of Technology, Pasadena, Califor
 February 10, 2022
 """
 
-function vxvyfilter(vx,vy,dt,sensor::Vector{Any})
-
-    # specify groups of sensors to be filtered together
-    sensorgroups = Vector{Vector{String}}(undef,1)
-    sensorgroups[1] = ["8.", "9."]
-    push!(sensorgroups, ["2A", "2B"])
-    push!(sensorgroups, ["1A", "1B"])
-    push!(sensorgroups, ["7."])
-    push!(sensorgroups, ["4.", "5."])
-
+function vxvyfilter(vx,vy,dt; sensor::Vector = ["none"])
     # filter bins
-    binedges = [0, 32, 64, 128, 256, 1E10]
+    binedges = [0, 16, 32, 64, 128, 256, 1E10]
 
     # initialize output
-    dtmax = Vector{Union{Missing, Float64}}(missing, size(sensorgroups))
     outlier = falses(size(vx))
-    for sg = 1:length(sensorgroups)
 
-        sgind = falses(size(sensor))
-        for k = 1:length(sensorgroups[sg])
-            sgind = sgind .| (sensor .== sensorgroups[sg][k])
-        end
+    # project vx and vy onto the median flow vector for dt <= 32
+    ind = (dt .<= 16) .& .~ismissing.(vx)
+    vx0 = Statistics.median(vx[ind])
+    vy0 = Statistics.median(vy[ind])
+
+    # check that vx0 and vy0 are not both equal to zero... if so set vx0 = 1;
+    # this is equivelent to picking an arbitrary direction on which to project 
+    #component velocities and avoids devide by zero  
+    if (vx0 == 0) & (vy0 == 0)
+        vx0 = 1;
+        vx0 = 1;
+    end
+
+    v0 = sqrt(vx0.^2 + vy0.^2);
+    uv = vcat(vx0/v0, vy0/v0) # unit flow vector
+    vp = hcat(vx, vy) * uv # flow acceleration in direction of unit flow vector
+
+    # if sensor variable is included then seperate filtering by sensor
+    if sensor[1] == "none"
+        # initialize output
+        dtmax = Vector{Union{Missing, Float64}}(missing, 1)
         
-        if any(sgind)
+        ind = .~ismissing.(vp)
 
-            #find the maximum dt that is not significantly different from the minimum dt bin
-            vxdtmax = dtfilter(vx[sgind], dt[sgind], binedges)
-            vydtmax = dtfilter(vy[sgind], dt[sgind], binedges)
+        # find the maximum dt that is not significantly different from the minimum dt bin
+        vpdtmax = dtfilter(vp[ind], dt[ind], binedges)
 
-            # find the minimum acceptable dt threshold
-            dtmax[sg] = min(vxdtmax, vydtmax)
+        # find the minimum acceptable dt threshold
+        dtmax[1] = vpdtmax
 
-            if dtmax[sg] > 20E3
-                # no data needs to be masked
-            else
-                # replace data that exceed dt threshold with missings 
-                valind = (.~ismissing.(vx)) .& sgind
-                outlier = ((dt .> dtmax[sg]) .& valind) .| outlier 
+        if dtmax[1] > 20E3
+            # no data needs to be masked
+        else
+            # replace data that exceed dt threshold with missings 
+            outlier = ((dt .> dtmax[1]) .& ind) .| outlier
+        end
+
+        sensorgroups = Vector{Vector{String}}(undef,1)
+        sensorgroups[1] = ["none"]
+
+    else
+        # specify groups of sensors to be filtered together
+        id, sensorgroups = sensorgroup(sensor)
+
+        # initialize output
+        dtmax = Vector{Union{Missing, Float64}}(missing, size(sensorgroups))
+
+        for sg = 1:length(sensorgroups)
+            sgind = id .== sg
+            
+            if any(sgind)
+                #find the maximum dt that is not significantly different from the minimum dt bin
+                vpdtmax = dtfilter(vp[sgind], dt[sgind], binedges)
+
+                # find the minimum acceptable dt threshold
+                dtmax[sg] = vpdtmax
+
+                if dtmax[sg] > 20E3
+                    # no data needs to be masked
+                else
+                    # replace data that exceed dt threshold with missings 
+                    valind = (.~ismissing.(vp)) .& sgind
+                    outlier = ((dt .> dtmax[sg]) .& valind) .| outlier 
+                end
             end
         end
     end
     return outlier, dtmax, sensorgroups
+    
 end
