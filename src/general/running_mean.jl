@@ -1,13 +1,11 @@
 """
     running_mean(v, w)
 
-returns the running mean of width w
+return the running mean of `v` using kernel width `w`
 using StatiStatistics
 
 # Example
 ```julia
-julia> v = rand(10000)
-julia> w = 3
 julia> running_mean(v, w)
 ```
 

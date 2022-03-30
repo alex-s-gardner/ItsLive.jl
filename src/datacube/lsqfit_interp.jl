@@ -1,7 +1,7 @@
 """
 lsqfit_interp(t_fit, v_fit, amp_fit, phase_fit, v_fit_err, amp_fit_err, t_i)
 
-creates a continuous time series of velocity from the outputs of ItsLive.lsqfit.
+create a continuous time series of velocity from the outputs of `ItsLive.lsqfit`.
 
 
 # Example

@@ -1,7 +1,7 @@
 """
-    plotvar(C, varname)
+    plotvar(C::Named Matrix{Any}, varname::String)
 
-    plot its_live variable for mutiple points
+    plot its_live data (`C`) variable (`varname`) for multiple points
 
 # Example no inputs
 ```julia

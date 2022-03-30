@@ -1,7 +1,8 @@
 """
     intersect(lat,lon, catalogdf])
 
-this function returns the rownumber of the the DataFrame catalog of the ITS_LIVE zarr datacubes that intersects the provided latitude and longituded [decimal degrees].
+return the rownumber of the the DataFrame catalog (`catalogdf`) of the ITS_LIVE zarr datacubes 
+that intersects the provided `lat`itude and `lon`gituded [decimal degrees].
 
 use catalog.jl to generate the DataFrame catalog of the ITS_LIVE zarr datacubes
 

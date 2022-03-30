@@ -1,7 +1,7 @@
 """
 nearestxy(lat,lon,dc)
 
-this function returns the x/y indices into a ZarrGroup for the points nearest the provided lat, lon locations
+return the `x`/`y` indices into a ZarrGroup (`dc`) for the points nearest the provided `lat`, `lon` locations
 
 using Proj4
 

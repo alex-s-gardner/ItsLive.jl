@@ -1,7 +1,7 @@
 """
     climatology_magnitude(vx0, vy0, vx0_err, vy0_err, dvx_dt, dvy_dt, vx_amp, vy_amp, vx_amp_err, vy_amp_err, vx_phase, vy_phase)
 
-returns the mean, trend, seasonal amplitude, error in seasonal amplitude, and seasonal phase from component values projected on the unit flow  vector defined by vx0 and vy0
+return the mean, trend, seasonal amplitude, error in seasonal amplitude, and seasonal phase from component values projected on the unit flow  vector defined by vx0 and vy0
 
 # Example no inputs
 ```julia

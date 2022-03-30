@@ -1,7 +1,7 @@
 """
     vxvyfilter(vx,vy,dt; sensor)
 
-remove data for which the vx or vy distibution changes for longer dts
+remove data for which the `vx` or `vy` distibution changes for longer `dt`
 
 This filter is needed to identify longer dts that exhibit "skipping" or "locking" behavior in feature tracking estimates of surface flow. This happens when the surface texture provides a lesser match than to stationary features, due to long time separation between repeat images, such as ice falls and curved medial moraines.
 

@@ -1,7 +1,7 @@
 """
     v_fit, v_fit_err, v_fit_count, v_fit_outlier_frac  = annual_magnitude(vx0, vy0, vx_fit, vy_fit, vx_fit_err, vy_fit_err, vx_fit_count, vy_fit_count, vx_fit_outlier_frac, vy_fit_outlier_frac)
 
-returns the annual mean, error, count, and outlier fraction from component values projected on the unit flow  vector defined by vx0 and vy0
+return the annual mean, error, count, and outlier fraction from component values projected on the unit flow  vector defined by vx0 and vy0
 
 # Example no inputs
 ```julia

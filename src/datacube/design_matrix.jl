@@ -1,7 +1,7 @@
 """
     design_matrix(t1,t2, model [optional])
 
-create design matrix for discrete interval data
+create a design matrix (`D`) for discrete interval data
 
 # Example
 ```julia

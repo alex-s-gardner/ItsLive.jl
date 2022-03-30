@@ -1,7 +1,7 @@
 """
     wliearfit(t, v, v_err, datetime0)
 
-returns the offset, slope, and error for a weighted linear fit to v with an intercept of datetime0
+return the `offset`, `slope`, and `error` for a weighted linear fit to `v` with an intercept of `datetime0`
 
 # Example no inputs
 ```julia
