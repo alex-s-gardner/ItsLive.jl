@@ -1,7 +1,7 @@
 """
     annual_matrix(t1,t2)
 
-create annual weighting matrix for discrete intervals
+create an annual weighting matrix for discrete intervals
 
 # Example
 ```julia

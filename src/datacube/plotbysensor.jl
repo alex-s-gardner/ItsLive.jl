@@ -1,7 +1,7 @@
 """
     plotbysensor(x,y,sensor)
 
-    plot its_live data colored by sensor
+    plot ITS_LIVE data `x` and `y` colored by `sensor`
 
 # Example no inputs
 ```julia

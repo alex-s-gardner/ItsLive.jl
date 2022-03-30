@@ -1,7 +1,7 @@
 """
-    sensorgroup(sensor)
+    sensorgroup(sensor::Vector{Any})
 
-returns the sensor group id and the corresponding sensor groups
+return the `sensor` group `id` and the corresponding `sensorgroups`
 
 
 using Statistics

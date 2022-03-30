@@ -1,9 +1,11 @@
 """
     getvar(lat,lon, varnames, catalogdf])
 
-this function returns a named m x n matrix of vectors with m = length(lat) rows and n = length(varnames)+2(for lat and lon) columns for the points nearest the lat/lon location from ITS_LIVE Zarr datacubes
+return a named m x n matrix of vectors (`vout`) with m = length(`lat`) rows 
+and n = length(`varnames`)+2(for `lat` and `lon`) columns for the points nearest 
+the `lat`/`lon` location from ITS_LIVE Zarr datacubes
 
-use catalog.jl to generate the DataFrame catalog of the ITS_LIVE zarr datacubes
+use `catalog.jl` to generate the DataFrame catalog (`catalogdf`) of the ITS_LIVE zarr datacubes
 
 using DataFrames Dates NamedArrays
 

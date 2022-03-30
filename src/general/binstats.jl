@@ -1,8 +1,8 @@
 """
     binstats(x, y; binedges::Vector{Float64} = [0.0], dx::Number = 0, method::String = "mean")
 
-    returns statistics of central value and spread on binned values according to
-    method ["mean" = default] argument
+    return statistics of `x` central value and `x` spread according to `method` ["mean" = default]
+    argument on values binned by `y`.
 
 # Example no inputs
 ```julia

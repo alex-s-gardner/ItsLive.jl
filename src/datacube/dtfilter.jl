@@ -1,7 +1,7 @@
 """
     dtfilter(x,dt,binedges)
 
-returns the maximum dt for which the distribution of x shows no statistical difference from the distribution of x in the minimum dt bin
+return the maximum `dt` for which the distribution of `x` shows no statistical difference from the distribution of `x` in the minimum `dt` bin
 
 This filter is needed to identify longer dts that exhibit "skipping" or "locking" behavior in feature tracking estimates of surface flow. This happens when the surface texture provides a lesser match than to stationary features, due to long time separation between repeat images, such as ice falls and curved medial moraines.
 
