@@ -8,7 +8,7 @@ January 25, 2022
 """
 
 # Revise.jl allows you to modify code and use the changes without restarting Julia
-using Zarr, Revise, Plots, Dates, DateFormats, ColorSchemes, Statistic, ItsLive
+using Plots, Dates, DateFormats,  ItsLive
 
 # load in ITS_LIVE datacube catalog as a Julia DataFrame
 catalogdf = ItsLive.catalog()

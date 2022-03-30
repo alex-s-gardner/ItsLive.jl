@@ -13,7 +13,6 @@ using FastRunningMedian
 using Polynomials
 using Plots
 using NearestNeighbors
-using Statistics
 
 include("general/binstats.jl")
 include("general/running_mean.jl")
