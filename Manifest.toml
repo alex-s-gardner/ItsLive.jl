@@ -5,9 +5,9 @@ manifest_format = "2.0"
 
 [[deps.AWS]]
 deps = ["Base64", "Compat", "Dates", "Downloads", "GitHub", "HTTP", "IniFile", "JSON", "MbedTLS", "Mocking", "OrderedCollections", "Retry", "Sockets", "URIs", "UUIDs", "XMLDict"]
-git-tree-sha1 = "82e9580aff0d2c1703f4bf38a9de79e927f252f9"
+git-tree-sha1 = "ee0efa566d172a2a282338566d6a7167823ecb82"
 uuid = "fbe9abb3-538b-5e4e-ba9e-bc94f4f92ebc"
-version = "1.74.0"
+version = "1.74.1"
 
 [[deps.AbstractFFTs]]
 deps = ["ChainRulesCore", "LinearAlgebra"]
@@ -664,6 +664,12 @@ version = "0.3.3"
 [[deps.MozillaCACerts_jll]]
 uuid = "14a3606d-f60d-562e-9121-12d972cd8159"
 
+[[deps.MutableArithmetics]]
+deps = ["LinearAlgebra", "SparseArrays", "Test"]
+git-tree-sha1 = "ba8c0f8732a24facba709388c74ba99dcbfdda1e"
+uuid = "d8a4904e-b15c-11e9-3269-09a3773c0cb0"
+version = "1.0.0"
+
 [[deps.NaNMath]]
 git-tree-sha1 = "b086b7ea07f8e38cf122f5016af580881ac914fe"
 uuid = "77ba4419-2d1f-58cd-9bb1-8ffee604a2e3"
@@ -784,6 +790,12 @@ deps = ["Base64", "Contour", "Dates", "Downloads", "FFMPEG", "FixedPointNumbers"
 git-tree-sha1 = "eb1432ec2b781f70ce2126c277d120554605669a"
 uuid = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 version = "1.25.8"
+
+[[deps.Polynomials]]
+deps = ["LinearAlgebra", "MutableArithmetics", "RecipesBase"]
+git-tree-sha1 = "0107e2f7f90cc7f756fee8a304987c574bbd7583"
+uuid = "f27b6e38-b328-58d1-80ce-0feddd5e7a45"
+version = "3.0.0"
 
 [[deps.PooledArrays]]
 deps = ["DataAPI", "Future"]
