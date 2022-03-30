@@ -16,7 +16,7 @@ end
 
 # ╔═╡ 214a6be6-dbe6-4281-97ef-ab5fd35b7e50
 ## Load packages
-using ItsLive, Zarr, Plots, Dates, DateFormats, PlutoUI
+using ItsLive, Plots, PlutoUI
 
 # ╔═╡ a0982a9c-2436-4fed-bd18-6b2de4e4758c
 md"""
@@ -27,11 +27,16 @@ A simple Pluto notebook showing how to use the basic functionality of the ITS\_L
 
 """
 
+# ╔═╡ 03d598ee-a11a-473f-9352-d9b813bddaa5
+# load ITS_LIVE datacube catalog as DataFrame [~5s]
+catalogdf = ItsLive.catalog();
+
 # ╔═╡ f0a6d6d5-6557-4585-a176-e58494d85758
 begin
 	latin = @bind lat NumberField(-90:0.0001:90, default=60.0480)
 	lonin = @bind lon NumberField(-180:0.0001:180, default=-140.5153)
 	varin = @bind var Select(["v", "v_error"])
+	dtmaxin = @bind dtmax NumberField(10:20:510, default=510)
 	
 	md"""
 	**Input latitude and longitude for point of interest [default = Malispina]:**
@@ -41,12 +46,10 @@ begin
 	Longitude: $(lonin) [decimal degrees]
 
 	Variable: $(varin)
+
+	max dt: $(dtmaxin) [maximum image-pair time separation, dt]
 	"""
 end
-
-# ╔═╡ 03d598ee-a11a-473f-9352-d9b813bddaa5
-# load in ITS_LIVE datacube catalog as DataFrame [~5s]
-catalogdf = ItsLive.catalog();
 
 # ╔═╡ e02c67c1-4e18-4738-a4bd-60264a5e017d
 # retrieve and plot data
@@ -57,25 +60,20 @@ begin
     valid =  .!ismissing.(C[1,var]);
 	# plot data
 	plotly()
-    plot(C[1,"mid_date"][valid], C[1,var][valid], seriestype = :scatter); 	
+    ItsLive.plotvar(C, var; dtmax = dtmax); 	
 end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
-DateFormats = "44557152-fe0a-4de1-8405-416d90313ce6"
-Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
 ItsLive = "774cd0c4-ba78-41e4-92fb-f5f90e3791d1"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
-Zarr = "0a941bbe-ad1d-11e8-39d9-ab76183a1d99"
 
 [compat]
-DateFormats = "~0.1.12"
 ItsLive = "~0.1.0"
 Plots = "~1.27.3"
 PlutoUI = "~0.7.37"
-Zarr = "~0.6.3"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -1891,9 +1889,9 @@ version = "0.9.1+5"
 
 # ╔═╡ Cell order:
 # ╟─a0982a9c-2436-4fed-bd18-6b2de4e4758c
-# ╟─f0a6d6d5-6557-4585-a176-e58494d85758
 # ╠═214a6be6-dbe6-4281-97ef-ab5fd35b7e50
 # ╠═03d598ee-a11a-473f-9352-d9b813bddaa5
+# ╟─f0a6d6d5-6557-4585-a176-e58494d85758
 # ╠═e02c67c1-4e18-4738-a4bd-60264a5e017d
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
