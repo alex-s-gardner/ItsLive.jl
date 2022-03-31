@@ -6,11 +6,10 @@ return the decimal year of a DateTime type vector
 using Dates
 
 # Example
-````julia """
-jldoctest
+````julia
     julia> decyear = ItsLive.decimalyear(Dates.DateTime(1970,1,1))
     1970.0
-"""````
+````
 
 # Arguments
    - `dt::Union{DateTime, Vector{DateTime}}`: date and time of DateTime type

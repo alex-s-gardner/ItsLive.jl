@@ -35,7 +35,7 @@ function plotbysensor(x,y,sensor)
     # unique sensors
     uid = unique(id)
 
-    p = plotly()
+    Plots.PlotlyBackend()
     plot()
     for i = 1:length(uid)
         ind = id .== uid[i]

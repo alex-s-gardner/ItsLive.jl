@@ -26,6 +26,7 @@ Jet Propulsion Laboratory, California Institute of Technology, Pasadena, Califor
 February 10, 2022
 """
 function getvar(lat::Union{Vector,Number},lon::Union{Vector,Number}, varnames::Union{String, Vector{String}}, catalogdf)
+    
 
 # check that lat is within range
 if any(lat .<-90 .|| lat .> 90)

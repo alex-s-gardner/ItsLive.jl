@@ -21,7 +21,7 @@ March 27, 2022
 """
 function plotvar(C, varname::String; dtmax::Number = Inf)
     npts = size(C,1)
-    plotly()
+    Plots.PlotlyBackend()
     plot()
     for i = 1:npts
         valid = .~ismissing.(C[i,varname])
