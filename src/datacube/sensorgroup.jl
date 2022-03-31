@@ -1,5 +1,5 @@
 """
-    sensorgroup(sensor::Vector{Any})
+    id, sensorgroups= sensorgroup(sensor)
 
 return the `sensor` group `id` and the corresponding `sensorgroups`
 
@@ -15,11 +15,8 @@ julia> id, sensorgroups = sensorgroup(sensor)
    - `sensor::Vector{Any}`: sensor list
 
 # Author
-Alex S. Gardner
-Jet Propulsion Laboratory, California Institute of Technology, Pasadena, California
-March 26, 2022
+Alex S. Gardner, JPL, Caltech.
 """
-
 function sensorgroup(sensor)
     # specify groups of sensors to be filtered together
     sensorgroups = []

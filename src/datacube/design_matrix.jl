@@ -1,5 +1,5 @@
 """
-    design_matrix(t1,t2, model [optional])
+    D, tD, M = design_matrix(t1,t2, model [optional])
 
 create a design matrix (`D`) for discrete interval data
 
@@ -13,16 +13,13 @@ julia> D, tD, M = design_matrix(t1,t2, model [optional])
    - `t2::Vector{DateTime}`: end DateTime of descrete interval 
    - `model::String = "sinusoidal_interannual"`:
 
+   - `D`: Design matrix
+   - `tD`: DateTime centers used in `D`
+   - `M` = Annual weighting matrix`:
+
 # Author
-Alex Gardner
-Jet Propulsion Laboratory, California Institute of Technology, Pasadena, California
-February 23, 2022
-
-Chad A. Greene [inspiration Matlab code]
-Jet Propulsion Laboratory, California Institute of Technology, Pasadena, California
-January 1, 2022
+Alex S. Gardner and Chad A. Greene, JPL, Caltech.
 """
-
 function design_matrix(t1::Vector{DateTime}, t2::Vector{DateTime}, model::String = "sinusoidal_interannual")
     # Convert datenums to decimal years:
     yr1 = ItsLive.decimalyear(t1)

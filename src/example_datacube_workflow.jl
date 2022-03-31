@@ -2,11 +2,8 @@
     this is an example workflow for working with ITS_LIVE.jl and the zarr datacubes
 
 # Author
-Alex S. Gardner
-Jet Propulsion Laboratory, California Institute of Technology, Pasadena, California
-January 25, 2022
+Alex S. Gardner, JPL, Caltech.
 """
-
 # Revise.jl allows you to modify code and use the changes without restarting Julia
 using Plots, Dates, DateFormats,  ItsLive
 
@@ -43,7 +40,7 @@ outlier, dtmax, sensorgroups = ItsLive.vxvyfilter(C[i,"vx"],C[i,"vy"],C[i,"date_
 valid = (.!ismissing.(C[i,"vx"])) .& (.!outlier)
 model = "sinusoidal"
 tx_fit, vx_fit, vx_amp, vx_phase, vx_fit_err, vx_amp_err, vx_fit_count, vx_fit_outlier_frac, outlier[valid] = 
-    ItsLive.lsqfit(C[i,"vx"][valid],C[i,"vx_error"][valid],C[i,"mid_date"][valid],C[i,"date_dt"][valid]; model = model);
+    ItsLive.lsqfit_annual(C[i,"vx"][valid],C[i,"vx_error"][valid],C[i,"mid_date"][valid],C[i,"date_dt"][valid]; model = model);
 
 # interpoalte model in time 
 t_i = DateTime.(DateFormats.YearDecimal.(2013:0.1:2022))

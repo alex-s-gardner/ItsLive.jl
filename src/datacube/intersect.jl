@@ -1,7 +1,7 @@
 """
-    intersect(lat,lon, catalogdf])
+    rownumber = intersect(lat,lon, catalogdf])
 
-return the rownumber of the the DataFrame catalog (`catalogdf`) of the ITS_LIVE zarr datacubes 
+return the `rownumber` of the the DataFrame catalog (`catalogdf`) of the ITS_LIVE zarr datacubes 
 that intersects the provided `lat`itude and `lon`gituded [decimal degrees].
 
 use catalog.jl to generate the DataFrame catalog of the ITS_LIVE zarr datacubes
@@ -19,11 +19,8 @@ julia> intersect(69.1,-49.4, catalogdf)
    - `catalogdf::DataFrame`: DataFrame catalog of the ITS_LIVE zarr datacubes
 
 # Author
-Alex S. Gardner
-Jet Propulsion Laboratory, California Institute of Technology, Pasadena, California
-January 25, 2022
+Alex S. Gardner, JPL, Caltech.
 """
-
 function intersect(lat::Number,lon::Number, catalogdf)
 # set up aws configuration
 

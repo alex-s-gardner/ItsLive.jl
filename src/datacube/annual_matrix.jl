@@ -13,13 +13,7 @@ julia> M, tM = annual_matrix(t1,t2)
    - `t2::Vector{DateTime}`: end DateTime of descrete interval 
 
 # Author
-Alex Gardner
-Jet Propulsion Laboratory, California Institute of Technology, Pasadena, California
-February 23, 2022
-
-Chad A. Greene [inspiration Matlab code]
-Jet Propulsion Laboratory, California Institute of Technology, Pasadena, California
-January 1, 2022
+Alex S. Gardner and Chad A. Greene, JPL, Caltech.
 """
 function annual_matrix(t1::Vector{DateTime}, t2::Vector{DateTime})
     # Convert datenums to decimal years:

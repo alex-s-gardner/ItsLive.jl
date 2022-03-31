@@ -1,7 +1,7 @@
 """
-    dtfilter(x,dt,binedges)
+    dtmax = dtfilter(x,dt,binedges)
 
-return the maximum `dt` for which the distribution of `x` shows no statistical difference from the distribution of `x` in the minimum `dt` bin
+return the maximum `dt` (`dtmax`) for which the distribution of `x` shows no statistical difference from the distribution of `x` in the minimum `dt` bin
 
 This filter is needed to identify longer dts that exhibit "skipping" or "locking" behavior in feature tracking estimates of surface flow. This happens when the surface texture provides a lesser match than to stationary features, due to long time separation between repeat images, such as ice falls and curved medial moraines.
 
@@ -19,11 +19,8 @@ julia> dtfilter(vx,dt,binedge)
    - `dtbin_mad_thresh::Number`: used to determine in dt means are significantly different
 
 # Author
-Alex S. Gardner
-Jet Propulsion Laboratory, California Institute of Technology, Pasadena, California
-February 10, 2022
+Alex S. Gardner, JPL, Caltech.
 """
-
 function dtfilter(x, dt , binedges::Vector{Float64} = [0, 16, 32, 64, 128, 256, 1E10], 
     dtbin_mad_thresh::Number = 0.5)
 

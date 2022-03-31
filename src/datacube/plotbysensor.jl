@@ -1,5 +1,5 @@
 """
-    plotbysensor(x,y,sensor)
+    p = plotbysensor(x,y,sensor)
 
     plot ITS_LIVE data `x` and `y` colored by `sensor`
 
@@ -14,11 +14,8 @@ julia> p = plotbysensor(x,y,sensor)
    - `sensor::Vector{Any}`: sensor
 
 # Author
-Alex S. Gardner
-Jet Propulsion Laboratory, California Institute of Technology, Pasadena, California
-March 27, 2022
+Alex S. Gardner, JPL, Caltech.
 """
-
 function plotbysensor(x,y,sensor)
 
     # determine sensor group ids

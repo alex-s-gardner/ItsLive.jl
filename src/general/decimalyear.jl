@@ -1,9 +1,7 @@
 """
-    decimalyear(dt)
+    decyear = decimalyear(datetime)
 
-return the decimal year of a DateTime type vector
-
-using Dates
+return the decimal year (`decyear`) of a DateTime type vector
 
 # Example
 ````julia
@@ -12,15 +10,12 @@ using Dates
 ````
 
 # Arguments
-   - `dt::Union{DateTime, Vector{DateTime}}`: date and time of DateTime type
+   - `datetime::Union{DateTime, Vector{DateTime}}`: date and time of type DateTime 
 
 # Author
-Alex S. Gardner
-Jet Propulsion Laboratory, California Institute of Technology, Pasadena, California
-February 11, 2022
+Alex S. Gardner, JPL, Caltech.
 """
-
-function decimalyear(dt::Union{DateTime, Vector{DateTime}})
+function decimalyear(datetime::Union{DateTime, Vector{DateTime}})
      
      # function for converting YearDecimal
      function YearDecimal2Float64(x)
@@ -32,14 +27,14 @@ function decimalyear(dt::Union{DateTime, Vector{DateTime}})
     end
 
     # Convert datenums to decimal years:
-    yr1 = DateFormats.YearDecimal.(dt)
+    yr1 = DateFormats.YearDecimal.(datetime)
     decimalyr = YearDecimal2Float64(yr1)
     return decimalyr
 end
 
-function decimalyear(dt::DateTime)
+function decimalyear(datetime::DateTime)
 
-    decimalyr = DateFormats.YearDecimal.(dt)
+    decimalyr = DateFormats.YearDecimal.(datetime)
     decimalyr = decimalyr.value 
 
    return decimalyr

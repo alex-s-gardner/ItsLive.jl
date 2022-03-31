@@ -21,11 +21,8 @@ julia>  annual_magnitude(vx0, vy0, vx_fit, vy_fit, vx_fit_err, vy_fit_err, vx_fi
     - `vy_fit_outlier_frac::Vector`: fraction of data identified as outliers and removed when calculating annual mean flow in y direction
 
 # Author
-Alex S. Gardner
-Jet Propulsion Laboratory, California Institute of Technology, Pasadena, California
-March 20, 2022
+Alex S. Gardner and Chad A. Greene, JPL, Caltech.
 """
-
 function annual_magnitude(vx0, vy0, vx_fit, vy_fit, vx_fit_err, vy_fit_err, vx_fit_count, vy_fit_count, vx_fit_outlier_frac, vy_fit_outlier_frac)
     
     # solve for velcity magnitude 

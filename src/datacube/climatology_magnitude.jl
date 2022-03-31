@@ -22,13 +22,9 @@ julia> v, v_err, dv_dt, v_amp, v_amp_err, v_phase = climatology_magnitude(vx0, v
    - `vx_phase::Number`: seasonal phase in x direction [day of maximum flow]
    - `vy_phase::Number`: seasonal phase in y direction [day of maximum flow]
 
-
 # Author
-Alex S. Gardner
-Jet Propulsion Laboratory, California Institute of Technology, Pasadena, California
-March 20, 2022
+Alex S. Gardner, JPL, Caltech.
 """
-
 function climatology_magnitude(vx0, vy0, vx0_err, vy0_err, dvx_dt, dvy_dt, vx_amp, vy_amp, vx_amp_err, vy_amp_err, vx_phase, vy_phase)
     
     # solve for velcity magnitude and acceleration [do this using vx and vy as to not bias the result due to the Rician distribution of v]

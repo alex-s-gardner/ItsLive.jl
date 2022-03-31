@@ -1,11 +1,11 @@
 """
-    sensorfilter(vx, vy, mid_date, dt, sensor; binedges, mincount, dtmax, id_refsensor, plotflag)
+    id_exclude = sensorfilter(vx, vy, mid_date, dt, sensor; binedges, mincount, dtmax, id_refsensor, plotflag)
 
     identify sensors that produce velocities that are sginificanlty slower
 
 # Example no inputs
 ```julia
-julia> sensor_exclude = sensorfilter(C[1,"vx"], C[1,"vy"], C[1,"mid_date"], C[1,"date_dt"], C[1,"satellite_img1"])
+julia> id_exclude = sensorfilter(C[1,"vx"], C[1,"vy"], C[1,"mid_date"], C[1,"date_dt"], C[1,"satellite_img1"])
 ```
 
 # Arguments
@@ -15,7 +15,6 @@ julia> sensor_exclude = sensorfilter(C[1,"vx"], C[1,"vy"], C[1,"mid_date"], C[1,
     - `dt::Vector{Any}`: time seperation between image pairs [days]
     - `sensor::Vector{Any}`: list of image sensors for image-pairs... used to group results
 
-# Keyword Arguments
     - `binedges::Union{Vector{Number}, StepRangeLen{Number, Base.TwicePrecision{Number}, Base.TwicePrecision{Number}, Number}}`: DateTime bin edges
     - `mincount::Number`: minimum count for a bin to be considered valid
     - `dtmax::Number`: maximum dt in days of admissible data for comparison
@@ -24,11 +23,8 @@ julia> sensor_exclude = sensorfilter(C[1,"vx"], C[1,"vy"], C[1,"mid_date"], C[1,
     - `plotflag::Bool`: flag for turning on and off plotting
 
 # Author
-Alex S. Gardner
-Jet Propulsion Laboratory, California Institute of Technology, Pasadena, California
-March 28, 2022
+Alex S. Gardner, JPL, Caltech.
 """
-
 function sensorfilter(vx::Vector{Union{Missing, Float64}}, vy::Vector{Union{Missing, Float64}},
     mid_date::Vector{DateTime}, dt::Vector{Float64}, sensor::Vector{Any};
     binedges = 2015.5:(1/5):2022.5,
@@ -111,7 +107,7 @@ function sensorfilter(vx::Vector{Union{Missing, Float64}}, vy::Vector{Union{Miss
     disagree = (m .+ (s.*sescale)) .< 0
 
     # retrieve sensor id
-    sensor_exclude = collect(1:numsg)[disagree]
+    id_exclude = collect(1:numsg)[disagree]
 
-    return sensor_exclude
+    return id_exclude
 end

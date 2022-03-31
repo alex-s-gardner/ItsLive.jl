@@ -1,7 +1,7 @@
 """
-    getvar(lat,lon, varnames, catalogdf])
+    C = getvar(lat,lon, varnames, catalogdf])
 
-return a named m x n matrix of vectors (`vout`) with m = length(`lat`) rows 
+return a named m x n matrix of vectors (`C`) with m = length(`lat`) rows 
 and n = length(`varnames`)+2(for `lat` and `lon`) columns for the points nearest 
 the `lat`/`lon` location from ITS_LIVE Zarr datacubes
 
@@ -21,9 +21,7 @@ julia> getvar(69.1,-49.4, ["mid_date", "v"], catalogdf)
    - `catalogdf::DataFrame`: DataFrame catalog of the ITS_LIVE zarr datacubes
 
 # Author
-Alex S. Gardner
-Jet Propulsion Laboratory, California Institute of Technology, Pasadena, California
-February 10, 2022
+Alex S. Gardner, JPL, Caltech.
 """
 function getvar(lat::Union{Vector,Number},lon::Union{Vector,Number}, varnames::Union{String, Vector{String}}, catalogdf)
     
@@ -60,7 +58,7 @@ urows = unique(rows)
 
 rind = zeros(size(lat))
 cind = zeros(size(lat))
-vout = Vector{Vector{Union{Missing, Any}}}()
+C = Vector{Vector{Union{Missing, Any}}}()
 ind = Vector{Int64}()
 vind = Vector{Int64}()
 
@@ -73,7 +71,7 @@ for row in urows
 
         for j = 1:lastindex(varnames)
             for i = 1:lastindex(ind0)
-                push!(vout, [missing])
+                push!(C, [missing])
                 push!(ind, ind0[i])
                 push!(vind, j)
             end
@@ -104,13 +102,13 @@ for row in urows
         if ndims(dc[varnames[j]]) == 1
             foo = dc[varnames[j]][:]
             for i = 1:lastindex(r)
-                push!(vout, foo)
+                push!(C, foo)
                 push!(ind, ind0[i])
                 push!(vind, j)
             end
         elseif ndims(dc[varnames[j]]) == 3
             for i = 1:lastindex(r)
-                push!(vout, dc[varnames[j]][r[i], c[i], :])
+                push!(C, dc[varnames[j]][r[i], c[i], :])
                 push!(ind, ind0[i])
                 push!(vind, j)
             end
@@ -125,21 +123,21 @@ end
 # sort vector by variables
 i = sortperm(vind)
 ind = ind[i]
-vout = vout[i]
+C = C[i]
 
 # reshape putting unique variables into columns
-vout = reshape(vout, (div(length(vout),length(varnames)), length(varnames)))
+C = reshape(C, (div(length(C),length(varnames)), length(varnames)))
 
 # sort rows to match input lat and lon
-i = sortperm(ind[1:div(length(vout),length(varnames))])
-vout = vout[i,:]
+i = sortperm(ind[1:div(length(C),length(varnames))])
+C = C[i,:]
 
 # add lat/lon to matrix
-vout = hcat(lat,lon,vout)
+C = hcat(lat,lon,C)
 
 # add naming to matrix
-vout = NamedArrays.NamedArray(vout)
-NamedArrays.setnames!(vout, vcat("lat","lon",varnames), 2)
+C = NamedArrays.NamedArray(C)
+NamedArrays.setnames!(C, vcat("lat","lon",varnames), 2)
 
 # find datetime variables and convert 
 datevarnames = ["acquisition_date_img2", "acquisition_date_img1", "date_center", "mid_date"]
@@ -154,20 +152,20 @@ npdt64_to_dt(t) =  SecondMissing.((round.(t.*86400))) .+ Dates.DateTime(1970)
 a = Base.intersect(varnames, datevarnames)
 
 for j = 1:length(a)
-    for i = 1:size(vout,1)
-        vout[i,a[j]]= npdt64_to_dt(vout[i,a[j]])
+    for i = 1:size(C,1)
+        C[i,a[j]]= npdt64_to_dt(C[i,a[j]])
     end
 end
 
 # convert other numeric variables to Float64. This is done to make future function type transparent
 a = setdiff(varnames, datevarnames)
 for j = 1:length(a)
-    if  isa(vout[1,a[j]][1], Union{Number, Missing})
-        for i = 1:size(vout,1)
-            vout[i,a[j]]= convert.(Union{Missing, Float64},(vout[i,a[j]]))
+    if  isa(C[1,a[j]][1], Union{Number, Missing})
+        for i = 1:size(C,1)
+            C[i,a[j]]= convert.(Union{Missing, Float64},(C[i,a[j]]))
         end
     end
 end
 
-return vout 
+return C 
 end

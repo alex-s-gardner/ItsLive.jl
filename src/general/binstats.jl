@@ -1,7 +1,7 @@
 """
-    binstats(x, y; binedges::Vector{Float64} = [0.0], dx::Number = 0, method::String = "mean")
+    yb, ybstd, countb, bincenters = binstats(x, y; binedges = [0.0], dx = 0, method = "mean")
 
-    return statistics of `x` central value and `x` spread according to `method` ["mean" = default]
+    return the central value (`yb`) and spread (`ybstd`) in `x` according to `method` ["mean" = default]
     argument on values binned by `y`.
 
 # Example no inputs
@@ -18,11 +18,8 @@ julia> yb, ybstd, countb, bincenters = binstats(x, y; dx = 1)
    - `skipspread::Bool`: flag for skipping spread calculations
 
 # Author
-Alex S. Gardner
-Jet Propulsion Laboratory, California Institute of Technology, Pasadena, California
-March 25, 2022
+Alex S. Gardner, JPL, Caltech.
 """
-
 function binstats(x, y; binedges::Vector{Float64} = [0.0], dx::Number = 0, method::String = "mean", skipspread::Bool = false)
 
     if (dx != 0) & (length(binedges) == 1)

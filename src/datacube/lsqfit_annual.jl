@@ -1,14 +1,15 @@
 """
-    lsqfit(v,v_err,mid_date,date_dt; mad_thresh[optional], iterations[optional], model[optional])
+    t_fit, v_fit, amp_fit, phase_fit, v_fit_err, amp_fit_err, fit_count, fit_outlier_frac, outlier =
+        lsqfit_annual(v,v_err,mid_date,date_dt; mad_thresh[optional], iterations[optional], model[optional])
 
-error wighted model fit to discrete interval data 
+annual error wighted model fit to discrete interval data 
 
 using Statistics
 
 # Example
 ```julia
 julia> t_fit, v_fit, amp_fit, phase_fit, v_fit_err, amp_fit_err, fit_count, fit_outlier_frac, outlier = 
-    lsqfit(v, v_err, mid_date, date_dt; mad_thresh, iterations, model)
+    lsqfit_annual(v, v_err, mid_date, date_dt; mad_thresh, iterations, model)
 ```
 
 # Arguments
@@ -17,21 +18,22 @@ julia> t_fit, v_fit, amp_fit, phase_fit, v_fit_err, amp_fit_err, fit_count, fit_
    - `mid_date::Vector{DateTime}`: center date of image-pair [] 
    - `date_dt::Vector{Any}`: time seperation between image pairs [days]
    - `mad_thresh::Number`: optional key word argument for MAD treshold for outlier rejection
-   - `iterations::Number`: optional key word argument for number of iterations for lsqfit outlier rejection
+   - `iterations::Number`: optional key word argument for number of iterations for lsqfit_annual outlier rejection
    - `model::String`: optional key word argument giving name of lsq model. Valid options are "sinusoidal_interannual", "sinusoidal", "interannual".
 
+   - `t_fit`: DateTime center of annual fit
+   - `v_fit`: annual values determined from lsq fit
+   - `amp_fit`: seasonal amplitude
+   - `phase_fit`: seasonal amplitude [DateTime of maximum flow]
+   - `v_fit_err`: error of v_fit
+   - `amp_fit_err`: error of amp_fit
+   - `fit_count`: data count for each year, after any outlier rejection
+   - `fit_outlier_frac`: fraction of data remove by outlier rejection
+   - `outlier`: BitVector of length of `v` indicating identified outliers
 # Author
-Alex Gardner [Julia code]
-Jet Propulsion Laboratory, California Institute of Technology, Pasadena, California
-February 17, 2022
-
-Chad A. Greene [original Matlab inspriation code]
-Jet Propulsion Laboratory, California Institute of Technology, Pasadena, California
-January 1, 2022
+Alex S. Gardner and Chad A. Greene, JPL, Caltech.
 """
-
-
-function lsqfit(v, v_err, mid_date, date_dt; mad_thresh::Number = 6, iterations::Number = 1, model::String = "interannual")
+function lsqfit_annual(v, v_err, mid_date, date_dt; mad_thresh::Number = 6, iterations::Number = 1, model::String = "interannual")
 
 outlier = ismissing.(v) 
 

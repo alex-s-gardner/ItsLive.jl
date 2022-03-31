@@ -1,5 +1,5 @@
 """
-    plotvar(C::Named Matrix{Any}, varname::String)
+    p = plotvar(C::Named Matrix{Any}, varname::String)
 
     plot its_live data (`C`) variable (`varname`) for multiple points
 
@@ -15,9 +15,7 @@ julia> p = plotvar(C, varname)
     - `dtmax::Number`: maximum time seperation between image pairs [days] to plot
 
 # Author
-Alex S. Gardner
-Jet Propulsion Laboratory, California Institute of Technology, Pasadena, California
-March 27, 2022
+Alex S. Gardner, JPL, Caltech.
 """
 function plotvar(C, varname::String; dtmax::Number = Inf)
     npts = size(C,1)

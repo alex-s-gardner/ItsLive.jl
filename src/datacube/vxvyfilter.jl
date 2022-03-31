@@ -1,7 +1,7 @@
 """
-    vxvyfilter(vx,vy,dt; sensor)
+    outlier, dtmax, sensorgroups = vxvyfilter(vx,vy,dt; sensor)
 
-remove data for which the `vx` or `vy` distibution changes for longer `dt`
+identify 'outlier's for which the `vx` or `vy` distibution changes for longer `dt`. 'dtmax' identified for each 'sensorgroups'
 
 This filter is needed to identify longer dts that exhibit "skipping" or "locking" behavior in feature tracking estimates of surface flow. This happens when the surface texture provides a lesser match than to stationary features, due to long time separation between repeat images, such as ice falls and curved medial moraines.
 
@@ -19,11 +19,8 @@ julia> outlier, dtmax, sensorgroups = vxvyfilter(vx,vy,dt,sensor)
    - `sensor::Vector{Any}`: list of image sensors for image-pairs... used to group results
 
 # Author
-Alex S. Gardner
-Jet Propulsion Laboratory, California Institute of Technology, Pasadena, California
-February 10, 2022
+Alex S. Gardner, JPL, Caltech.
 """
-
 function vxvyfilter(vx,vy,dt; sensor::Vector = ["none"])
     # filter bins
     binedges = [0, 16, 32, 64, 128, 256, 1E10]

@@ -19,11 +19,8 @@ julia> catalog(catalog_geojson = "path/to/catalog.json")
    - `catalog_geojson::String`: path to geojson catalog of ITS_LIVE datacubes
 
 # Author
-Alex S. Gardner
-Jet Propulsion Laboratory, California Institute of Technology, Pasadena, California
-January 25, 2022
+Alex S. Gardner, JPL, Caltech.
 """
-
 function catalog(catalog_geojson::String = "https://its-live-data.s3.amazonaws.com/datacubes/catalog_v02.json")
 # set up aws configuration
 

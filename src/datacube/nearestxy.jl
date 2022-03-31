@@ -1,7 +1,7 @@
 """
-nearestxy(lat,lon,dc)
+  xind, yind = nearestxy(lat,lon,dc)
 
-return the `x`/`y` indices into a ZarrGroup (`dc`) for the points nearest the provided `lat`, `lon` locations
+return the `xind`/`yind` indices into a ZarrGroup (`dc`) for the points nearest the provided `lat`, `lon` locations
 
 using Proj4
 
@@ -17,11 +17,8 @@ julia> nearestxy(lat,lon,dc)
    - `dc:::ZGroup{Zarr.ConsolidatedStore{Zarr.HTTPStore}}`: ITS_LIVE data cube:: Zarr DataArray 
 
 # Author
-Alex S. Gardner
-Jet Propulsion Laboratory, California Institute of Technology, Pasadena, California
-February 4, 2022
+Alex S. Gardner, JPL, Caltech.
 """
-
 function nearestxy(lat::Union{Vector,Number}, lon::Union{Vector,Number}, dc::ZGroup{Zarr.ConsolidatedStore{Zarr.HTTPStore}})
   # check that lat is within range
   if any((lat .< -90) .| (lat .> 90))

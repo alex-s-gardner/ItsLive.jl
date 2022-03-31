@@ -1,5 +1,5 @@
 """
-    wliearfit(t, v, v_err, datetime0)
+    offset, slope, error = wliearfit(t, v, v_err, datetime0)
 
 return the `offset`, `slope`, and `error` for a weighted linear fit to `v` with an intercept of `datetime0`
 
@@ -15,12 +15,8 @@ julia> offset, slope, error = wliearfit(t, v, v_err, datetime0)
    - `datetime0::DateTime)`: model intercept
 
 # Author
-Alex S. Gardner
-Jet Propulsion Laboratory, California Institute of Technology, Pasadena, California
-March 17, 2022
+Alex S. Gardner, JPL, Caltech.
 """
-
-
 function wlinearfit(t::Vector{DateTime}, v::Vector{Float64} , v_err::Vector{Float64} , datetime0::DateTime)
 
     yr = ItsLive.decimalyear(t)

@@ -1,5 +1,5 @@
 """
-lsqfit_interp(t_fit, v_fit, amp_fit, phase_fit, v_fit_err, amp_fit_err, t_i)
+   v_i, v_i_err = lsqfit_interp(t_fit, v_fit, amp_fit, phase_fit, v_fit_err, amp_fit_err, t_i)
 
 create a continuous time series of velocity from the outputs of `ItsLive.lsqfit`.
 
@@ -19,14 +19,7 @@ julia> v_i, v_i_err = lsqfit_interp(t_fit, v_fit, amp_fit, phase_fit, v_fit_err,
    - `t_i:::Vector{DateTime}`: dates to interpolate to
 
 # Author
-Chad A. Greene [original Matlab code]
-Jet Propulsion Laboratory, California Institute of Technology, Pasadena, California
-January 1, 2022
-
-Alex Gardner [Julia code]
-Jet Propulsion Laboratory, California Institute of Technology, Pasadena, California
-February 17, 2022
-
+Alex S. Gardner and Chad A. Greene, JPL, Caltech.
 """
 function lsqfit_interp(t_fit, v_fit, amp_fit, phase_fit, v_fit_err, amp_fit_err, t_i; interp_method::String = "BSpline")
     
