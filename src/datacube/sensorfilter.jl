@@ -15,13 +15,8 @@ julia> id_exclude = sensorfilter(C[1,"vx"], C[1,"vy"], C[1,"mid_date"], C[1,"dat
     - `dt::Vector{Any}`: time seperation between image pairs [days]
     - `sensor::Vector{Any}`: list of image sensors for image-pairs... used to group results
 
-    - `binedges::Union{Vector{Number}, StepRangeLen{Number, Base.TwicePrecision{Number}, Base.TwicePrecision{Number}, Number}}`: DateTime bin edges
-    - `mincount::Number`: minimum count for a bin to be considered valid
-    - `dtmax::Number`: maximum dt in days of admissible data for comparison
-    - `id_refsensor::Number`: id of sensor to which all other sensores are compared
-    - `sescale::Number`: standard error (se) scale factor for determination of significance
-    - `plotflag::Bool`: flag for turning on and off plotting
-
+    - `id_exclude': I'd of sensors to exclude [exclude none if empty]
+ 
 # Author
 Alex S. Gardner, JPL, Caltech.
 """
