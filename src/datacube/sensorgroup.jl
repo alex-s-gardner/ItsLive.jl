@@ -3,9 +3,6 @@
 
 return the `sensor` group `id` and the corresponding `sensorgroups`
 
-
-using Statistics
-
 # Example
 ```julia
 julia> id, sensorgroups = sensorgroup(sensor)
