@@ -15,11 +15,11 @@ macro bind(def, element)
 end
 
 # ╔═╡ 627497e5-c27a-47c5-b9cd-da8da0c4c9e6
-import Pkg; Pkg.add("ItsLive"); Pkg.add("PlutoUI")
+import Pkg; Pkg.add("ItsLive", "main"); Pkg.add("PlutoUI"); Pkg.add("Plots")
 
 # ╔═╡ 650d51da-3a14-4f8d-9631-abfc14acee08
 ## Import packages [this can take minutes, be patient]
-using ItsLive, PlutoUI
+using ItsLive, PlutoUI, Plots
 
 # ╔═╡ 223463aa-377f-44ce-9158-c6abb4c6c436
 md"""
@@ -58,7 +58,7 @@ C = ItsLive.getvar(lat,lon,["mid_date", var], catalogdf)
 
 # ╔═╡ b4e0d407-d94c-46c1-a873-59dd1d92ef14
 ## Plot data
-ItsLive.plotvar(C, var, dtmax = dtmax);
+p = ItsLive.plotvar(C, var, dtmax = dtmax); plotly(), plot(p)
 
 # ╔═╡ Cell order:
 # ╟─223463aa-377f-44ce-9158-c6abb4c6c436

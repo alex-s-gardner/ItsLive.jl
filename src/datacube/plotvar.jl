@@ -20,7 +20,7 @@ Alex S. Gardner, JPL, Caltech.
 function plotvar(C, varname::String; dtmax::Number = Inf)
     npts = size(C,1)
     Plots.PlotlyBackend()
-    plot()
+    p = plot()
     for i = 1:npts
         valid = .~ismissing.(C[i,varname])
         if ~isinf(dtmax)
@@ -30,4 +30,5 @@ function plotvar(C, varname::String; dtmax::Number = Inf)
         p = plot!(C[i,"mid_date"][valid], C[i,varname][valid], seriestype = :scatter)
         display(p)
     end
+    return p
 end

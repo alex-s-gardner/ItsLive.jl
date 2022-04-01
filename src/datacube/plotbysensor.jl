@@ -33,12 +33,12 @@ function plotbysensor(x,y,sensor)
     uid = unique(id)
 
     Plots.PlotlyBackend()
-    plot()
+    p = plot()
     for i = 1:length(uid)
         ind = id .== uid[i]
         p = plot!(x[ind], y[ind], seriestype = :scatter,  label = sensorgroups[uid[i]]["name"])
-    
+        display(p)
     end
-    display(p)
+   
     return p
 end
