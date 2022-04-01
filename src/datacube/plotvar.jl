@@ -26,9 +26,7 @@ function plotvar(C, varname::String; dtmax::Number = Inf)
         if ~isinf(dtmax)
             valid = valid .& (C[i,"date_dt"] .<= dtmax)
         end
-
         p = plot!(C[i,"mid_date"][valid], C[i,varname][valid], seriestype = :scatter)
-        display(p)
     end
     return p
 end

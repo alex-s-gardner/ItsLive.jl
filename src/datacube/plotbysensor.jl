@@ -36,8 +36,7 @@ function plotbysensor(x,y,sensor)
     p = plot()
     for i = 1:length(uid)
         ind = id .== uid[i]
-        p = plot!(x[ind], y[ind], seriestype = :scatter,  label = sensorgroups[uid[i]]["name"])
-        display(p)
+        plot!(x[ind], y[ind], seriestype = :scatter,  label = sensorgroups[uid[i]]["name"])
     end
    
     return p

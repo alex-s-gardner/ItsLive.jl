@@ -54,11 +54,11 @@ end
 
 # ╔═╡ 9c87e266-8745-4108-a355-7f139acf6c57
 ## Retrieve data from datacube sitting in the AWS cloud
-C = ItsLive.getvar(lat,lon,["mid_date", var], catalogdf)
+C = ItsLive.getvar(lat,lon,["mid_date", "date_dt", var], catalogdf)
 
 # ╔═╡ b4e0d407-d94c-46c1-a873-59dd1d92ef14
 ## Plot data
-p = ItsLive.plotvar(C, var, dtmax = dtmax); plotly(), plot(p)
+plot(ItsLive.plotvar(C, var, dtmax = dtmax));
 
 # ╔═╡ Cell order:
 # ╟─223463aa-377f-44ce-9158-c6abb4c6c436
