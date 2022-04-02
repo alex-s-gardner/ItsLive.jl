@@ -37,9 +37,9 @@ julia> using ItsLive
 
 **`C = ItsLive.getvar(lat, lon, varnames, catalogdf)`** return a named m x n matrix of vectors with m = length(`lat`) rows and n = length(`varnames`)+2(for `lat` and `lon`) columns for the points nearest the `lat`/`lon` location from ITS_LIVE Zarr datacubes (`catalogdf`).
 
-**`plotvar(C, varname))`** plot ITS_LIVE data (`C`) variable (`varname`) for multiple points.
+**`plotvar(C, varname))`** plot ITS_LIVE data (`C`) variable (`varname`) for multiple points. Use keyword `dtmax` = Number to limit longer image-pair separations from being plotted.
 
-**`plotbysensor(x,y,sensor)`** plot ITS_LIVE data `x` and `y` colored by `sensor`.
+**`plotbysensor(C, varname))`** plot ITS_LIVE data (`C`) variable (`varname`) by sensor. Size(`C`,2) must = 1, e.g. `C[1,:]` of full matrix. Use keyword `dtmax` = Number to limit longer image-pair separations from being plotted.
 
 **`binstats(x, y, [binedges = [0.0], dx= 0, method = "mean"])`** return statistics of `x` central value and `x` spread according to `method` ["mean" = default] argument on values binned by `y`.
 
