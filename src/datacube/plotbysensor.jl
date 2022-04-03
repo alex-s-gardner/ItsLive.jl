@@ -19,7 +19,7 @@ Alex S. Gardner, JPL, Caltech.
 """
 function plotbysensor(C, varname::String; dtmax::Number = Inf)
 
-    if size(C,1) # make into a NamedVector
+    if size(C,1) == 1 # make into a NamedVector
         C = C[1,:]
     end
 
