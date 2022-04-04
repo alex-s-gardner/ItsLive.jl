@@ -35,4 +35,5 @@ include("datacube/sensorgroup.jl")
 include("datacube/plotbysensor.jl")
 include("datacube/sensorfilter.jl")
 include("datacube/plotvar.jl")
+include("datacube/save2h5.jl")
 end # modulepl  

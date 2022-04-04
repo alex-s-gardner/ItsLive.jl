@@ -5,7 +5,7 @@
 Alex S. Gardner, JPL, Caltech.
 """
 # Revise.jl allows you to modify code and use the changes without restarting Julia
-using Plots, Dates, DateFormats, ItsLive
+using Plots, Dates, DateFormats, ItsLive, HDF5
 
 # load in ITS_LIVE datacube catalog as a Julia DataFrame
 catalogdf = ItsLive.catalog()

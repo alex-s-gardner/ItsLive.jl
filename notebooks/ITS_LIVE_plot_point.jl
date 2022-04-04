@@ -16,10 +16,7 @@ end
 
 # ╔═╡ 650d51da-3a14-4f8d-9631-abfc14acee08
 ## Import packages [this can take minutes, be patient]
-#import Pkg; Pkg.add(name="ItsLive", version="0.1.4"); Pkg.add("PlutoUI"); Pkg.add("Plots")
-
-import Pkg; Pkg.add(url="https://github.com/alex-s-gardner/ItsLive.jl", rev = "main"); Pkg.add("PlutoUI"); Pkg.add("Plots")
-
+import Pkg; Pkg.add("ItsLive"); Pkg.add("PlutoUI"); Pkg.add("Plots")
 
 # ╔═╡ c5f65479-a0ad-43d3-a0d5-afa306d90ce0
 ## Add packages and set plotting backend [this can take minutes, be patient]
@@ -78,3 +75,6 @@ p = ItsLive.plotbysensor(C[1,:], var); plot(p)
 # ╠═80698b1c-c8db-4c85-a1d3-e456075f9105
 # ╠═9c87e266-8745-4108-a355-7f139acf6c57
 # ╠═b4e0d407-d94c-46c1-a873-59dd1d92ef14
+
+[compat]
+ItsLive = "^0.1.5"
