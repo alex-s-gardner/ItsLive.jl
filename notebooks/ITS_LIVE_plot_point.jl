@@ -53,11 +53,6 @@ begin
 	"""
 end
 
-# ╔═╡ 80698b1c-c8db-4c85-a1d3-e456075f9105
-with_terminal() do
-    Pkg.status()
-end
-
 # ╔═╡ 9c87e266-8745-4108-a355-7f139acf6c57
 ## Retrieve data from datacube sitting in the AWS cloud
 C = ItsLive.getvar(lat,lon,["mid_date", "date_dt", "satellite_img1", var], catalogdf)
@@ -72,9 +67,5 @@ p = ItsLive.plotbysensor(C[1,:], var); plot(p)
 # ╠═c5f65479-a0ad-43d3-a0d5-afa306d90ce0
 # ╟─ec7b89e9-91f3-4d66-9dbb-790f9a6b9a7f
 # ╟─36347994-417d-4f86-8463-61595db3dbc2
-# ╠═80698b1c-c8db-4c85-a1d3-e456075f9105
 # ╠═9c87e266-8745-4108-a355-7f139acf6c57
 # ╠═b4e0d407-d94c-46c1-a873-59dd1d92ef14
-
-[compat]
-ItsLive = "^0.1.5"
