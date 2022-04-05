@@ -16,7 +16,7 @@ end
 
 # ╔═╡ 650d51da-3a14-4f8d-9631-abfc14acee08
 ## Import packages [this can take minutes, be patient]
-import Pkg; Pkg.add("ItsLive"); Pkg.add("PlutoUI"); Pkg.add("Plots")
+# import Pkg; Pkg.add("ItsLive"); Pkg.add("PlutoUI"); Pkg.add("Plots")
 
 # ╔═╡ c5f65479-a0ad-43d3-a0d5-afa306d90ce0
 ## Add packages and set plotting backend [this can take minutes, be patient]
