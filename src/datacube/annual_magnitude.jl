@@ -28,7 +28,7 @@ function annual_magnitude(vx0, vy0, vx_fit, vy_fit, vx_fit_err, vy_fit_err, vx_f
     # solve for velcity magnitude 
     v_fit = sqrt.(vx_fit.^2 + vy_fit.^2) # velocity magnitude
     uv = vcat(vx0/v_fit, vy0/v_fit) # unit flow vector
-    v_fit_err = abs.(hcat(vx_fit_err, vy_fit_err)) * abs.(uv) # flow acceleration in direction of unit flow vector, take absolute values
+    v_fit_err = hcat(vx_fit_err, vy_fit_err) * abs.(uv) # flow acceleration in direction of unit flow vector, take absolute values
     v_fit_count = ceil.((vx_fit_count .+ vy_fit_count) ./ 2)
     v_fit_outlier_frac = (vx_fit_outlier_frac .+ vy_fit_outlier_frac) ./ 2
 

@@ -1,19 +1,24 @@
 using Documenter
 using ItsLive
 
+DocMeta.setdocmeta!(STAC, :DocTestSetup, :(using ItsLive); recursive=true)
+
 makedocs(
-    sitename = "ItsLive",
-    format = Documenter.HTML(),
-    modules = [ItsLive]
+    modules=[ItsLive]
+    authors="Alex S. Gardner, JPL, Caltech.",
+    repo="https://github.com/JuliaClimate/STAC.jl/blob/{commit}{path}#{line}",
+    sitename = "ItsLive.jl",
+    format=Documenter.HTML(;
+        prettyurls=get(ENV, "CI", "false") == "true",
+        canonical="https://alex.s.gardner.github.io/ItsLive.jl/dev/",
+        assets=String[],
+    ),
+    pages=[
+        "Home" => "index.md",
+    ],  
 )
 
 deploydocs(
-    repo = "github.com/alex-s-gardner/ItsLive.jl.git",
+    repo = "github.com/alex-s-gardner/ItsLive.jl",
+    devbranch="main",
 )
-
-# Documenter can also automatically deploy documentation to gh-pages.
-# See "Hosting Documentation" and deploydocs() in the Documenter manual
-# for more information.
-#=deploydocs(
-    repo = "<repository url>"
-)=#
