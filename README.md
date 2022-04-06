@@ -23,7 +23,42 @@ julia> import Pkg; Pkg.add("ItsLive")
 julia> using ItsLive
 ```
 
-## Working Example
+## Quick start
+Load packages [after package has been added]
+```julia
+using ItsLive
+```
+Load ITS_LIVE datacube catalog
+```julia
+catalogdf = ItsLive.catalog()
+```
+Specify points of interest
+```julia
+lat = [59.925, 60.0002]
+lon = [-140.620, -140.563]
+```
+List variable names to retrive
+```julia
+varnames = ["mid_date", "date_dt", "vx", "vx_error", "vy", "vy_error","satellite_img1"]
+```
+Retrieve data
+```julia
+C = ItsLive.getvar(lat,lon,varnames, catalogdf)
+```
+
+Plot a single variable for all points
+```julia
+ItsLive.plotvar(C,"vx")
+```
+![ItsLive.plotvar](docs/build/assets/its_live_plotvar.png)
+
+Plot a single point, single variable colored by sensor
+```julia
+ItsLive.plotbysensor(C[1,:],"vx"); 
+```
+![ItsLive.plotbysensor](docs/build/assets/its_live_plotbysensor.png)
+
+## Examples
 **`example_datacube_workflow.jl`** example script showing how to work with the `ItsLive.jl` package.
 
 **`datacube_basic_pluto.jl`** A simple Pluto example that uses the `ItsLive.jl` package to retrieve and plot ITS_LIVE data.

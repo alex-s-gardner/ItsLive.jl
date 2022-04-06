@@ -5,7 +5,7 @@
 Alex S. Gardner, JPL, Caltech.
 """
 # Revise.jl allows you to modify code and use the changes without restarting Julia
-using Plots, Dates, DateFormats, ItsLive, HDF5
+using DateFormats, Plots, ItsLive
 
 # load in ITS_LIVE datacube catalog as a Julia DataFrame
 catalogdf = ItsLive.catalog()
@@ -13,8 +13,8 @@ catalogdf = ItsLive.catalog()
 # find the DataFrame rows of the datacube that intersect a series of lat/lon points
 
 # malispina example
-lat = [59.92518849057908, 60.00020529502237, 60.048010121383285, 60.08331214700366, 60.12523330242785, 60.168625375586224, 60.21348836647878, 60.25614498077006]
-lon = [-140.62047084667643, -140.5638405139104, -140.5153002286824, -140.46749540232148, -140.43881250650492, -140.43219337670112, -140.38733038580855, -140.33143551190963]
+lat = [59.925, 60.048, 60.08331214700366, 60.125, 60.168, 60.213, 60.256]
+lon = [-140.620, -140.515, -140.467, -140.438, -140.432, -140.387, -140.331]
 
 # jakobshavn glacier example
 #lat = [69.1302, 69.1155, 69.1020, 69.0994, 69.1034, 69.1074, 69.1101, 69.1148]
@@ -34,7 +34,7 @@ ItsLive.plotvar(C,"vx")
 i = 1;
 
 # plot by sensor
-p = ItsLive.plotbysensor(C[i,:],"vx"); plot(p)
+p = ItsLive.plotbysensor(C[i,:],"vx"); 
 
 # filter long dt data that exhibits skipping behaviour
 outlier, dtmax, sensorgroups = ItsLive.vxvyfilter(C[i,"vx"],C[i,"vy"],C[i,"date_dt"]; sensor = C[i,"satellite_img1"])
