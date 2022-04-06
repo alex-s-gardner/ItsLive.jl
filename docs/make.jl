@@ -4,7 +4,7 @@ using ItsLive
 # DocMeta.setdocmeta!(ItsLive, :DocTestSetup, :(using ItsLive); recursive=true)
 
 makedocs(
-    modules=[ItsLive]
+    modules=[ItsLive],
     authors="Alex S. Gardner, JPL, Caltech.",
     repo="https://github.com/JuliaClimate/STAC.jl/blob/{commit}{path}#{line}",
     sitename = "ItsLive.jl",
