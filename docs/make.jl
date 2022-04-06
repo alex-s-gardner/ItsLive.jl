@@ -1,8 +1,6 @@
 using Documenter
 using ItsLive
 
-#DocMeta.setdocmeta!(ItsLive, :DocTestSetup, :(using ItsLive); recursive=true)
-
 makedocs(
     modules=[ItsLive],
     authors="Alex S. Gardner, JPL, Caltech",
@@ -14,5 +12,4 @@ makedocs(
 
 deploydocs(
     repo = "github.com/alex-s-gardner/ItsLive.jl.git",
-    devbranch="main",
 )
