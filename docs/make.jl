@@ -6,6 +6,7 @@ makedocs(
     authors="Alex S. Gardner, JPL, Caltech",
     format = Documenter.HTML(
         sidebar_sitename = false,
+    )
 )
 
 deploydocs(
