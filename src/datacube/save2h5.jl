@@ -25,7 +25,7 @@ function save2h5(C, outfilename)
                 v = C[pt,vname]
                 if v isa Vector{Union{Missing, Float64}}
                     v = Float64.(replace(v, missing => NaN))
-                elseif vname == "satellite_img1" .|| vname == "satellite_img2"
+                elseif vname == "satellite_img1" || vname == "satellite_img2"
                     id, sensorgroups = ItsLive.sensorgroup(v)
                     v = id;
                     sensor_info = "";
