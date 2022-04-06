@@ -34,8 +34,8 @@ catalogdf = ItsLive.catalog()
 ```
 Specify points of interest
 ```julia
-lat = [59.925, 60.0002]
-lon = [-140.620, -140.563]
+lat = [59.925, 60.048, 60.083, 60.125, 60.168, 60.213, 60.256]
+lon = [-140.620, -140.515, -140.467, -140.438, -140.432, -140.387, -140.331]
 ```
 List variable names to retrive
 ```julia

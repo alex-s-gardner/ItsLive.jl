@@ -13,7 +13,7 @@ catalogdf = ItsLive.catalog()
 # find the DataFrame rows of the datacube that intersect a series of lat/lon points
 
 # malispina example
-lat = [59.925, 60.048, 60.08331214700366, 60.125, 60.168, 60.213, 60.256]
+lat = [59.925, 60.048, 60.083, 60.125, 60.168, 60.213, 60.256]
 lon = [-140.620, -140.515, -140.467, -140.438, -140.432, -140.387, -140.331]
 
 # jakobshavn glacier example
