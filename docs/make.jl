@@ -17,4 +17,5 @@ deploydocs(
     branch = "gh-pages",
     forcepush = true,
     dirname = "",
+    push_preview = true,
 )
