@@ -6,8 +6,9 @@ DocMeta.setdocmeta!(ItsLive, :DocTestSetup, :(using ItsLive); recursive=true)
 makedocs(
     modules=[ItsLive],
     authors="Alex S. Gardner, JPL, Caltech",
-    repo="https://github.com/alex-s-gardner/ItsLive.jl/blob/{commit}{path}#{line}",
     sitename = "ItsLive.jl",
+    format = Documenter.HTML(
+        prettyurls = get(ENV, "CI", nothing) == "true"),
 )
 
 deploydocs(
