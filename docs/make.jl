@@ -5,6 +5,7 @@ makedocs(
     modules=[ItsLive],
     authors="Alex S. Gardner, JPL, Caltech",
     sitename="ItsLive.jl",
+    canonical = "https://alex-s-gardner.github.io/ItsLive.jl/stable/",
     format = Documenter.HTML(
         sidebar_sitename = false,
     )
@@ -12,4 +13,6 @@ makedocs(
 
 deploydocs(
     repo = "github.com/alex-s-gardner/ItsLive.jl.git",
+    target = "build",
+    push_preview = true,
 )
