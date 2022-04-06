@@ -9,6 +9,7 @@ makedocs(
     sitename = "ItsLive.jl",
     format = Documenter.HTML(
         prettyurls = get(ENV, "CI", nothing) == "true"),
+        sidebar_sitename = false,
 )
 
 deploydocs(
