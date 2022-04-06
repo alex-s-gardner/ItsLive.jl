@@ -1,7 +1,7 @@
 using Documenter
 using ItsLive
 
-DocMeta.setdocmeta!(STAC, :DocTestSetup, :(using ItsLive); recursive=true)
+# DocMeta.setdocmeta!(ItsLive, :DocTestSetup, :(using ItsLive); recursive=true)
 
 makedocs(
     modules=[ItsLive]
