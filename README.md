@@ -50,13 +50,13 @@ Plot a single variable for all points
 ```julia
 ItsLive.plotvar(C,"vx")
 ```
-![ItsLive.plotvar](docs/srs/assets/its_live_plotvar.png)
+![ItsLive.plotvar](docs/src/assets/its_live_plotvar.png)
 
 Plot a single point, single variable colored by sensor
 ```julia
 ItsLive.plotbysensor(C[1,:],"vx"); 
 ```
-![ItsLive.plotbysensor](docs/srs/assets/its_live_plotbysensor.png)
+![ItsLive.plotbysensor](docs/src/assets/its_live_plotbysensor.png)
 
 ## Examples
 **`example_datacube_workflow.jl`** example script showing how to work with the `ItsLive.jl` package.
