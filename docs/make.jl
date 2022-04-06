@@ -12,6 +12,6 @@ makedocs(
 )
 
 deploydocs(
-    repo = "github.com/alex-s-gardner/ItsLive.jl",
+    repo = "github.com/alex-s-gardner/ItsLive.jl.git",
     devbranch="main",
 )
