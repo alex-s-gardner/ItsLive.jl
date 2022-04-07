@@ -15,7 +15,5 @@ deploydocs(
     repo = "github.com/alex-s-gardner/ItsLive.jl.git",
     target = "build",
     branch = "gh-pages",
-    forcepush = true,
     dirname = "",
-    push_preview = true,
 )
