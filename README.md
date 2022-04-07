@@ -1,6 +1,5 @@
-<!--
-[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://alex-s-gardner.github.io/ItsLive.jl/stable)
--->
+[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://alex-s-gardner.github.io/ItsLive.jl/dev)
+
 ![ITS_LIVE](https://its-live-data.s3.amazonaws.com/documentation/ITS_LIVE_Julia_logo_transparent_wht.png)
 # ItsLive.jl
 # A Julia Package 
