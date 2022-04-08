@@ -21,12 +21,12 @@ Alex S. Gardner, JPL, Caltech.
 """
 function nearestxy(lat::Union{Vector,Number}, lon::Union{Vector,Number}, dc::ZGroup{Zarr.ConsolidatedStore{Zarr.HTTPStore}})
   # check that lat is within range
-  if any((lat .< -90) .| (lat .> 90))
+  if any(lat .< -90) || any(lat .> 90))
     error("lat = $lat, not in range [-90 to 90]")
   end
 
   # check that lon is within range
-  if any((lon .<-180) .| (lon .> 180))
+  if any(lon .<-180) || any(lon .> 180))
     error("lon = $lon, not in range [-180 to 180]")
   end
 
