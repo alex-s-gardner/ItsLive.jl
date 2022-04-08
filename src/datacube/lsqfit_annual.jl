@@ -58,7 +58,6 @@ w_d = transpose(1. /( v_err .* dyr)) # Not squared because the p= line below wou
 ## pre filter data
 valid = .!outlier
 p = sortperm(mid_date[valid]);
-w = sqrt.(wd./mean(w_d[valid]))
 
 # moving window MAD filter seems much more robust
 w = 15;
@@ -102,7 +101,7 @@ d_obs = v.*dyr; # observed displacement in meters
 for i = 1:iterations
 
     # Solve for coefficients of each column in the Vandermonde:
-    p = (w[valid].*D[valid,:]) \ (w[valid].*d_obs[valid]);
+    p = (w_d[valid].*D[valid,:]) \ (w_d[valid].*d_obs[valid]);
 
     if i < iterations
         ## Find and remove outliers    

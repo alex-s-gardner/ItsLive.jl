@@ -25,7 +25,7 @@ function wlinearfit(t::Vector{DateTime}, v::Vector{Float64} , v_err::Vector{Floa
     yr = yr .- yr0;
 
     # weights for velocities:
-    w_v = 1 ./ (v_err.^2)
+    w = 1 ./ (v_err) # Not squared because the p= line below would then have to include sqrt(w) on both accounts
 
     # create design matrix
     D = ones((length(yr),2))
@@ -33,7 +33,6 @@ function wlinearfit(t::Vector{DateTime}, v::Vector{Float64} , v_err::Vector{Floa
 
     # Solve for coefficients of each column in the design matrix
     valid = .!ismissing.(v)
-    w = sqrt.(wv./mean(w_v[valid]))
     offset, slope = (w[valid].*D[valid,:]) \ (w[valid].*v[valid]);
 
     # fit error
