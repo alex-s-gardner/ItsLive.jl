@@ -146,7 +146,7 @@ if model == "sinusoidal_interannual"
     amp_fit_err = Vector{Union{Float64,Missing}}(missing, size(amp_fit))
     for k = 1:Nyrs
         ind = (M[:,k] .> 0) .& valid;
-        amp_fit_err[k] = stdw(d_obs[ind]-d_model[ind],w[ind]) ./ (sum(w[ind].*dyr[ind])./sum(w[ind])); # asg replaced call to wmean [!!! FOUND AND FIXED ERROR !!!!!!]
+        amp_fit_err[k] = stdw(d_obs[ind]-d_model[ind],w_d[ind]) ./ (sum(w_d[ind].*dyr[ind])./sum(w_d[ind])); # asg replaced call to wmean [!!! FOUND AND FIXED ERROR !!!!!!]
     end
 
     t_fit  = Dates.DateTime.(round.(Int,yr),7,1)
@@ -161,7 +161,7 @@ elseif model == "sinusoidal"
     # A_err is the *velocity* (not displacement) error, which is the displacement error divided by the weighted mean dt:
     amp_fit_err = Vector{Union{Float64,Missing}}(missing, 1)
     ind = valid;
-    amp_fit_err = stdw(d_obs[ind]-d_model[ind],w[ind]) ./ (sum(w[ind].*dyr[ind])./sum(w[ind])); # asg replaced call to wmean [!!! FOUND AND FIXED ERROR !!!!!!]
+    amp_fit_err = stdw(d_obs[ind]-d_model[ind],w_d[ind]) ./ (sum(w_d[ind].*dyr[ind])./sum(w_d[ind])); # asg replaced call to wmean [!!! FOUND AND FIXED ERROR !!!!!!]
 
     t_fit  = Dates.DateTime.(round.(Int,yr),7,1)
     v_fit = p[2+1:end];
