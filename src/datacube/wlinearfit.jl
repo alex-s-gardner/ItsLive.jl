@@ -33,7 +33,8 @@ function wlinearfit(t::Vector{DateTime}, v::Vector{Float64} , v_err::Vector{Floa
 
     # Solve for coefficients of each column in the design matrix
     valid = .!ismissing.(v)
-    offset, slope = (w_v[valid].*D[valid,:]) \ (w_v[valid].*v[valid]);
+    w = sqrt.(wv./mean(w_v[valid]))
+    offset, slope = (w[valid].*D[valid,:]) \ (w[valid].*v[valid]);
 
     # fit error
     error = sqrt(sum(v_err[valid].^2))/(sum(valid)-1)
