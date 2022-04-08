@@ -53,11 +53,12 @@ w_v = 1 ./ (v_err.^2)
 
 # Weights (correspond to displacement error, not velocity error):
 w_d = transpose(1. /( v_err .* dyr)) # Not squared because the p= line below would then have to include sqrt(w) on both accounts
-w_d = ones(size(w_d))
+
 
 ## pre filter data
 valid = .!outlier
 p = sortperm(mid_date[valid]);
+w = sqrt.(wd./mean(w_d[valid]))
 
 # moving window MAD filter seems much more robust
 w = 15;
@@ -101,7 +102,7 @@ d_obs = v.*dyr; # observed displacement in meters
 for i = 1:iterations
 
     # Solve for coefficients of each column in the Vandermonde:
-    p = (w_d[valid].*D[valid,:]) \ (w_d[valid].*d_obs[valid]);
+    p = (w[valid].*D[valid,:]) \ (w[valid].*d_obs[valid]);
 
     if i < iterations
         ## Find and remove outliers    
@@ -118,6 +119,8 @@ for i = 1:iterations
         #hasdata = vec(sum(M, dims = 1).>1);
         #yr = yr[hasdata];
         #M = M[:,hasdata];
+
+        valid = .!outlier
     end
 end
 
@@ -144,7 +147,7 @@ if model == "sinusoidal_interannual"
     amp_fit_err = Vector{Union{Float64,Missing}}(missing, size(amp_fit))
     for k = 1:Nyrs
         ind = (M[:,k] .> 0) .& valid;
-        amp_fit_err[k] = stdw(d_obs[ind]-d_model[ind],w_d[ind]) ./ (sum(w_d[ind].*dyr[ind])./sum(w_d[ind])); # asg replaced call to wmean [!!! FOUND AND FIXED ERROR !!!!!!]
+        amp_fit_err[k] = stdw(d_obs[ind]-d_model[ind],w[ind]) ./ (sum(w[ind].*dyr[ind])./sum(w[ind])); # asg replaced call to wmean [!!! FOUND AND FIXED ERROR !!!!!!]
     end
 
     t_fit  = Dates.DateTime.(round.(Int,yr),7,1)
@@ -159,7 +162,7 @@ elseif model == "sinusoidal"
     # A_err is the *velocity* (not displacement) error, which is the displacement error divided by the weighted mean dt:
     amp_fit_err = Vector{Union{Float64,Missing}}(missing, 1)
     ind = valid;
-    amp_fit_err = stdw(d_obs[ind]-d_model[ind],w_d[ind]) ./ (sum(w_d[ind].*dyr[ind])./sum(w_d[ind])); # asg replaced call to wmean [!!! FOUND AND FIXED ERROR !!!!!!]
+    amp_fit_err = stdw(d_obs[ind]-d_model[ind],w[ind]) ./ (sum(w[ind].*dyr[ind])./sum(w[ind])); # asg replaced call to wmean [!!! FOUND AND FIXED ERROR !!!!!!]
 
     t_fit  = Dates.DateTime.(round.(Int,yr),7,1)
     v_fit = p[2+1:end];
