@@ -21,10 +21,10 @@ function sensorgroup(sensor)
     # specify groups of sensors to be filtered together
     sensorgroups = []
     push!(sensorgroups, Dict([("id", 1), ("name", "Sentinel 2"), ("sensors", ["2A", "2B"])]))
-    push!(sensorgroups, Dict([("id", 2), ("name", "Landsat 8/9"), ("sensors",["8.", "9."])]))
+    push!(sensorgroups, Dict([("id", 2), ("name", "Landsat 8/9"), ("sensors",["8.0", "9.0"])]))
     push!(sensorgroups, Dict([("id", 3), ("name", "Sentinel 1"), ("sensors",["1A", "1B"])]))
-    push!(sensorgroups, Dict([("id", 4), ("name", "Landsat 7"), ("sensors",["7."])]))
-    push!(sensorgroups, Dict([("id", 5), ("name", "Landsat 4/5"), ("sensors",["4.", "5."])]))
+    push!(sensorgroups, Dict([("id", 4), ("name", "Landsat 7"), ("sensors",["7.0"])]))
+    push!(sensorgroups, Dict([("id", 5), ("name", "Landsat 4/5"), ("sensors",["4.0", "5.0"])]))
 
     # ensure that Sentinel 2 is the first index [has implications for dependencies]
     if ~(sensorgroups[1]["name"] == "Sentinel 2")
