@@ -24,6 +24,8 @@ Alex S. Gardner, JPL, Caltech.
 function dtfilter(x, dt , binedges::Vector{Float64} = [0, 16, 32, 64, 128, 256, 1E10], 
     dtbin_mad_thresh::Number = 0.5)
 
+    # minimum count for valid bin
+    min_ref_bin_count = 50;
 
     ## define internal functions 
     # define a median absolut difference function
@@ -62,20 +64,28 @@ function dtfilter(x, dt , binedges::Vector{Float64} = [0, 16, 32, 64, 128, 256, 
 
     binMad = zeros(Int16, length(binedges)-1)
     binMed = zeros(Int16, length(binedges)-1)
+    binCnt = zeros(Int16, length(binedges)-1)
 
     size(binMad)
     for i in range(1, length(bin_ind)-1)
             foo = medmad(x[bin_ind[i]:bin_ind[i+1]]);
             binMed[i] = foo[1]
             binMad[i] = foo[2]
+            binCnt[i] = bin_ind[i+1] - bin_ind[i] + 1;
     end
     
     # check if populations overlap (use first, smallest dt, bin as reference)
     minBound = binMed - (binMad * dtbin_mad_thresh * 1.4826);
     maxBound = binMed + (binMad * dtbin_mad_thresh * 1.4826);
 
+    # find first valid bin
+    ref_ind = findfirst(binCnt .>= min_ref_bin_count)
+    if isempty(ref_ind)
+        ref_ind = findfirst(maxBound .> 0)
+    end
+
     # check if distributions overlap
-    exclude = (minBound .> maxBound[1]) .| (maxBound .< minBound[1]);
+    exclude = (minBound .> maxBound[ref_ind]) .| (maxBound .< minBound[ref_ind]);
     println("$minBound")
     println("$maxBound")
 

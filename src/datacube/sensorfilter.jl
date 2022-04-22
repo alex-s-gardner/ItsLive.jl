@@ -24,9 +24,9 @@ function sensorfilter(vx::Vector{Union{Missing, Float64}}, vy::Vector{Union{Miss
     mid_date::Vector{DateTime}, dt::Vector{Float64}, sensor::Vector{Any};
     binedges = 2015.5:(1/5):2022.5,
     mincount::Number = 3,
-    dtmax::Number = 24,
+    dtmax::Number = 64,
     id_refsensor::Number = 1,
-    sescale::Number = 1,
+    sescale::Number = 3,
     plotflag::Bool = true)
 
     # expand bin edges if needed
@@ -46,8 +46,13 @@ function sensorfilter(vx::Vector{Union{Missing, Float64}}, vy::Vector{Union{Miss
     mid_date = mid_date[ind]
 
     # determine sensor group ids
+
+    println(unique(sensor))
+
     id, sensorgroups = ItsLive.sensorgroup(sensor)
     numsg = length(sensorgroups)
+    println(unique(id))
+    println(sum(id .== 2))
 
     # convert date to decimal year
     decyear = ItsLive.decimalyear(mid_date)
@@ -61,18 +66,20 @@ function sensorfilter(vx::Vector{Union{Missing, Float64}}, vy::Vector{Union{Miss
     # loop for each sensor group
     for sg = 1:numsg
         ind = id .== sg;
+        println(sg, sum(ind))
         vx0 = mean(vx[ind])
         vy0 = mean(vy[ind])
         v0 = sqrt.(vx0.^2 .+ vy0.^2);
         uv = vcat(vx0/v0, vy0/v0)
         vp = hcat(vx[ind],vy[ind]) * uv # flow acceleration in direction of unit flow vector
-        
         vbin[sg,:], vstdbin[sg,:], vcountbin[sg,:], bincenters = ItsLive.binstats(decyear[ind], vp; binedges)
     end
 
     # remove points with < mincount
     vbin[vcountbin .< mincount] .= NaN
     
+    # println(vbin[2,:])
+
     # plot binned values
     if plotflag
         plot()

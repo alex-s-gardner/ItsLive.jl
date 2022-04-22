@@ -94,6 +94,10 @@ for row in urows
     rind[ind0] .= r
     cind[ind0] .= c
     
+    ## print row and column
+    #println(path2cube)
+    #println("row = $r, column = $c")
+
     # extract timeseries from datacube
 
     # loop for each r and c
