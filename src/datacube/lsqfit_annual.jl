@@ -84,7 +84,7 @@ foo[resid .> (mad_thresh*2*sigma)] .= true # multiply threshold by 2 as this is 
 
 ## Make matrix of percentages of years corresponding to each displacement measurement
 D, tD, M = ItsLive.design_matrix(t1, t2, model)
-validYears = vec(sum(M[valid,:],dims=1) .> 1)
+validYears = vec(sum(M[valid,:],dims=1) .> 0)
 if model == "sinusoidal_interannual"
     validD = repeat(validYears,3)
 elseif model == "sinusoidal"
