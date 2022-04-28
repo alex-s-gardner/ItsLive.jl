@@ -1,5 +1,5 @@
 """
-    t_fit, v_fit, amp_fit, phase_fit, v_fit_err, amp_fit_err, fit_count, fit_outlier_frac, outlier =
+    t_fit, v_fit, amp_fit, phase_fit, v_fit_err, amp_fit_err, fit_count, image_pair_count, outlier =
         lsqfit_annual(v,v_err,mid_date,date_dt; mad_thresh[optional], iterations[optional], model[optional])
 
 annual error wighted model fit to discrete interval data 
@@ -8,7 +8,7 @@ using Statistics
 
 # Example
 ```julia
-julia> t_fit, v_fit, amp_fit, phase_fit, v_fit_err, amp_fit_err, fit_count, fit_outlier_frac, outlier = 
+julia> t_fit, v_fit, amp_fit, phase_fit, v_fit_err, amp_fit_err, fit_count, image_pair_count, outlier = 
     lsqfit_annual(v, v_err, mid_date, date_dt; mad_thresh, iterations, model)
 ```
 
@@ -28,7 +28,7 @@ julia> t_fit, v_fit, amp_fit, phase_fit, v_fit_err, amp_fit_err, fit_count, fit_
    - `v_fit_err`: error of v_fit
    - `amp_fit_err`: error of amp_fit
    - `fit_count`: data count for each year, after any outlier rejection
-   - `fit_outlier_frac`: fraction of data remove by outlier rejection
+   - `image_pair_count`: total number of image pairs included in lsq fit
    - `outlier`: BitVector of length of `v` indicating identified outliers
 # Author
 Alex S. Gardner and Chad A. Greene, JPL, Caltech.
@@ -124,7 +124,7 @@ for i = 1:iterations
 end
 
 valid = .!outlier
-fit_outlier_frac = 1 -(sum(valid)./length(valid));
+image_pair_count = 1 -(sum(valid)./length(valid));
 
 # Goodness of fit:
 d_model = sum(broadcast(*,D,transpose(p)),dims=2);
@@ -187,6 +187,9 @@ v_fit_err =  vec(1 ./ sqrt.(sum(w_v[valid].*M[valid,:], dims=1)));
 # as per convention, set missing values as non outliers 
 outlier[ismissing.(vec(v))] .= false
 
-return t_fit, v_fit, amp_fit, phase_fit, v_fit_err, amp_fit_err, fit_count, fit_outlier_frac, outlier
+# NOTES:image_pair_count !== fit_count as a single image pair can contribute to the least squares fit for more than a single year (edited) 
+image_pair_count = sum(valid)
+
+return t_fit, v_fit, amp_fit, phase_fit, v_fit_err, amp_fit_err, fit_count, image_pair_count, outlier
 
 end

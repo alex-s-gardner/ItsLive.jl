@@ -42,7 +42,7 @@ outlier, dtmax, sensorgroups = ItsLive.vxvyfilter(C[i,"vx"],C[i,"vy"],C[i,"date_
 # fit seasonal model with iterannual changes in amplitude and phase]
 valid = (.!ismissing.(C[i,"vx"])) .& (.!outlier)
 model = "sinusoidal"
-tx_fit, vx_fit, vx_amp, vx_phase, vx_fit_err, vx_amp_err, vx_fit_count, vx_fit_outlier_frac, outlier[valid] = 
+tx_fit, vx_fit, vx_amp, vx_phase, vx_fit_err, vx_amp_err, vx_fit_count, vx_image_pair_count, outlier[valid] = 
     ItsLive.lsqfit_annual(C[i,"vx"][valid],C[i,"vx_error"][valid],C[i,"mid_date"][valid],C[i,"date_dt"][valid]; model = model);
 
 # interpoalte model in time 
