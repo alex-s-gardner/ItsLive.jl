@@ -63,7 +63,7 @@ function vxvyfilter(vx,vy,dt; sensor::Vector = ["none"])
         ind = .~ismissing.(vp)
 
         # find the maximum dt that is not significantly different from the minimum dt bin
-        vpdtmax = dtfilter(vp[ind], dt[ind], binedges)
+        vpdtmax = dtfilter(vp, dt, binedges)
 
         # find the minimum acceptable dt threshold
         dtmax[1] = vpdtmax
