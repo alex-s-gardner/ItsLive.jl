@@ -56,8 +56,7 @@ function vxvyfilter(vx,vy,dt; sensor::Vector = ["none"])
 
     # if sensor variable is included then seperate filtering by sensor
     if sensor[1] == "none"
-        vproj(vx::Vector,vy::Vector, dt::Vector)
-
+        
         # initialize output
         dtmax = Vector{Union{Missing, Float64}}(missing, 1)
         
