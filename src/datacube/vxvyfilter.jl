@@ -30,13 +30,12 @@ function vxvyfilter(vx,vy,dt; sensor::Vector = ["none"])
 
     # initialize output
     outlier = falses(size(vx))
-    valid = .~ismissing.(vx);
 
     # you need atleast 50 observations for 
     min_count_threshold = 50;
 
     # project vx and vy onto the median flow vector for dt <= 16
-    dt_median_flow = [16, 32, 64, 128, 256]
+    dt_median_flow = [16, 32, 64, 128, 256, inf]
     ind = NaN;
 
     for dt0 in  dt_median_flow

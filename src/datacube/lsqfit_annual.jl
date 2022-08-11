@@ -37,6 +37,8 @@ function lsqfit_annual(v, v_err, mid_date, date_dt; mad_thresh::Number = 6, iter
 
 outlier = ismissing.(v) 
 
+# TODO: add condition that if there are less than 5 data points then exit with all values set to missing 
+
 t1 = mid_date .- (Dates.Second.(round.(Int64,date_dt .* 86400 ./2)))
 t2 = mid_date .+ (Dates.Second.(round.(Int64,date_dt .* 86400 ./2)))
 
@@ -52,8 +54,7 @@ dyr = yr2 .- yr1
 w_v = 1 ./ (v_err.^2)
 
 # Weights (correspond to displacement error, not velocity error):
-w_d = transpose(1. /( v_err .* dyr)) # Not squared because the p= line below would then have to include sqrt(w) on both accounts
-
+w_d = transpose(1. /(v_err .* dyr)) # Not squared because the p= line below would then have to include sqrt(w) on both accounts
 
 ## pre filter data
 valid = .!outlier
@@ -74,13 +75,14 @@ resid[p] = abs.(v[valid][p] - vmed);
 sigma = Statistics.median(resid)*1.4826;
 foo = view(outlier, valid)
 foo[resid .> (mad_thresh*2*sigma)] .= true # multiply threshold by 2 as this is a crude filter
+valid = .!outlier
+
+#TODO: if sum(valid) < 5 then set outputs to missing and exit
 
 # uncommnet following three lined to plot residules and outliers
 # plot(mid_date[valid], resid, seriestype = :scatter, mc = :gray, labels="residuals")
 # pp = plot!(mid_date[outlier[valid]], resid[outlier[valid]], seriestype = :scatter, mc = :red, labels="outliers")
 # display(pp)
-
-# Iterative mad filter []
 
 ## Make matrix of percentages of years corresponding to each displacement measurement
 D, tD, M = ItsLive.design_matrix(t1, t2, model)
@@ -101,6 +103,7 @@ d_obs = v.*dyr; # observed displacement in meters
 for i = 1:iterations
 
     # Solve for coefficients of each column in the Vandermonde:
+    #TODO: replace "\" with SolveLinear.jl
     p = (w_d[valid].*D[valid,:]) \ (w_d[valid].*d_obs[valid]);
 
     if i < iterations
@@ -120,6 +123,8 @@ for i = 1:iterations
         #M = M[:,hasdata];
 
         valid = .!outlier
+
+        #TODO: if sum(valid) < 5 then set outputs to missing and exit program
     end
 end
 
