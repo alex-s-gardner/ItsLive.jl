@@ -25,7 +25,6 @@ Alex S. Gardner, JPL, Caltech.
 """
 function getvar(lat::Union{Vector,Number},lon::Union{Vector,Number}, varnames::Union{String, Vector{String}}, catalogdf)
     
-
 # check that lat is within range
 if any(lat .<-90) || any(lat .> 90)
     error("lat = $lat, not in range [-90 to 90]")
@@ -64,6 +63,7 @@ vind = Vector{Int64}()
 
 # select variable to extract
 # varnames = ["vx"]
+
 for row in urows
     # check if row is "missing"
     if ismissing(row)
@@ -94,6 +94,7 @@ for row in urows
     rind[ind0] .= r
     cind[ind0] .= c
     
+    println("row = ", r, ", col = ", c)
     ## print row and column
     #println(path2cube)
     #println("row = $r, column = $c")
