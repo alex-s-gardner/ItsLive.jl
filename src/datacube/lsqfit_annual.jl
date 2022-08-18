@@ -104,6 +104,7 @@ for i = 1:iterations
 
     # Solve for coefficients of each column in the Vandermonde:
     #TODO: replace "\" with SolveLinear.jl
+    # using LinearSolve
     p = (w_d[valid].*D[valid,:]) \ (w_d[valid].*d_obs[valid]);
 
     if i < iterations
@@ -158,7 +159,6 @@ if model == "sinusoidal_interannual"
     v_fit = p[2*Nyrs+1:end];
 
 elseif model == "sinusoidal"
-    println(p)
     amp_fit = hypot.(p[1],p[2]); # amplitude of sinusoid from trig identity a*sin(t) + b*cos(t) = d*sin(t+phi), where d=hypot(a,b) and phi=atan2(b,a).
     phase_rad = atan.(p[2],p[1]); # phase in radians
     phase_fit = 365.25*(mod.(0.25 .- phase_rad/(2*pi),1)); # phase converted such that it reflects the day when value is maximized
