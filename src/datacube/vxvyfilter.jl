@@ -35,7 +35,7 @@ function vxvyfilter(vx,vy,dt; sensor::Vector = ["none"])
     min_count_threshold = 50;
 
     # project vx and vy onto the median flow vector for dt <= 16
-    dt_median_flow = [16, 32, 64, 128, 256, inf]
+    dt_median_flow = [16, 32, 64, 128, 256, Inf]
     ind = NaN;
 
     for dt0 in  dt_median_flow
