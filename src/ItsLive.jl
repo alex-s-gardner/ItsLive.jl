@@ -35,5 +35,7 @@ include("datacube/sensorgroup.jl")
 include("datacube/plotbysensor.jl")
 include("datacube/sensorfilter.jl")
 include("datacube/plotvar.jl")
+precompile(plotvar,(NamedMatrix{Any, Matrix{Any}, Tuple{OrderedDict{String, Int64}, OrderedDict{String, Int64}}}, String))
+precompile(plotvar,(NamedMatrix{Any, Matrix{Any}, Tuple{OrderedDict{String, Int64}, OrderedDict{String, Int64}}}, String, Number))
 include("datacube/save2h5.jl")
 end # modulepl  
