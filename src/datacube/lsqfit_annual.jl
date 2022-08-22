@@ -54,7 +54,7 @@ dyr = yr2 .- yr1
 w_v = 1 ./ (v_err.^2)
 
 # Weights (correspond to displacement error, not velocity error):
-w_d = transpose(1. /(v_err .* dyr)) # Not squared because the p= line below would then have to include sqrt(w) on both accounts
+w_d = transpose(1 ./ (v_err .* dyr)) # Not squared because the p= line below would then have to include sqrt(w) on both accounts
 
 ## pre filter data
 valid = .!outlier
