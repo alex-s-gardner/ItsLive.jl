@@ -1,8 +1,8 @@
 module ItsLive
 
-import DataFrames
-import ArchGDAL
-import Proj4
+using DataFrames
+using ArchGDAL
+using Proj4
 using AWS
 using Zarr
 using NamedArrays
@@ -36,7 +36,11 @@ include("datacube/sensorgroup.jl")
 include("datacube/plotbysensor.jl")
 include("datacube/sensorfilter.jl")
 include("datacube/plotvar.jl")
-precompile(plotvar,(NamedMatrix{Any, Matrix{Any}, Tuple{OrderedDict{String, Int64}, OrderedDict{String, Int64}}}, String))
-precompile(plotvar,(NamedMatrix{Any, Matrix{Any}, Tuple{OrderedDict{String, Int64}, OrderedDict{String, Int64}}}, String, Number))
 include("datacube/save2h5.jl")
+
+# precompile functions
+precompile(plotvar,(NamedMatrix{Any, Matrix{Any}, Tuple{OrderedDict{String, Int64}, OrderedDict{String, Int64}}}, String, Number))
+
+precompile(getvar, (Union{Vector,Number},Union{Vector,Number}, Union{String, Vector{String}}, DataFrame))
+
 end # modulepl  

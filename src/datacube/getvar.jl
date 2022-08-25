@@ -23,7 +23,7 @@ julia> getvar(69.1,-49.4, ["mid_date", "v"], catalogdf)
 # Author
 Alex S. Gardner, JPL, Caltech.
 """
-function getvar(lat::Union{Vector,Number},lon::Union{Vector,Number}, varnames::Union{String, Vector{String}}, catalogdf)
+function getvar(lat::Union{Vector,Number},lon::Union{Vector,Number}, varnames::Union{String, Vector{String}}, catalogdf::DataFrame)
     
 # check that lat is within range
 if any(lat .<-90) || any(lat .> 90)
