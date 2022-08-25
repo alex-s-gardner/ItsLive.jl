@@ -41,6 +41,6 @@ include("datacube/save2h5.jl")
 # precompile functions
 precompile(plotvar,(NamedMatrix{Any, Matrix{Any}, Tuple{OrderedDict{String, Int64}, OrderedDict{String, Int64}}}, String, Number))
 precompile(getvar, (Union{Vector,Number},Union{Vector,Number}, Union{String, Vector{String}}, DataFrame))
-precompile(catalogdf, )
-precompile(catalogdf, (String))
+precompile(catalog, )
+precompile(catalog, (String))
 end # modulepl  
