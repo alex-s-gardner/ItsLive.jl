@@ -1,7 +1,7 @@
 name = "ItsLive"
 uuid = "774cd0c4-ba78-41e4-92fb-f5f90e3791d1"
 authors = ["Alex Gardner <32276930+alex-s-gardner@users.noreply.github.com>"]
-version = "0.1.8"
+version = "0.1.9"
 
 [deps]
 AWS = "fbe9abb3-538b-5e4e-ba9e-bc94f4f92ebc"
@@ -33,7 +33,7 @@ OrderedCollections = "^1.4"
 NearestNeighbors = "^0.4"
 Plots = "^1.25"
 Polynomials = "^3.0"
-Proj4 = "^0.7"
+Proj4 = "^0.7, 1"
 Statistics = "^1.5"
 Zarr = "^0.6"
 julia = "^1.4"
