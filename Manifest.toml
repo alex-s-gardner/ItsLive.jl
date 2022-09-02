@@ -851,6 +851,7 @@ uuid = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 deps = ["CEnum", "CoordinateTransformations", "PROJ_jll", "StaticArrays"]
 git-tree-sha1 = "5f15f1c647b563e49f655fbbfd4e2ade24bd3c64"
 uuid = "9a7e659c-8ee8-5706-894e-f68f43bc57ea"
+version = "1.0.0"
 
 [[deps.Qt5Base_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "Fontconfig_jll", "Glib_jll", "JLLWrappers", "Libdl", "Libglvnd_jll", "OpenSSL_jll", "Pkg", "Xorg_libXext_jll", "Xorg_libxcb_jll", "Xorg_xcb_util_image_jll", "Xorg_xcb_util_keysyms_jll", "Xorg_xcb_util_renderutil_jll", "Xorg_xcb_util_wm_jll", "Zlib_jll", "xkbcommon_jll"]
