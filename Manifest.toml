@@ -847,7 +847,7 @@ version = "1.3.1"
 deps = ["Unicode"]
 uuid = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 
-[[deps.Proj4]]
+[[deps.Proj]]
 deps = ["CEnum", "CoordinateTransformations", "PROJ_jll", "StaticArrays"]
 git-tree-sha1 = "5f15f1c647b563e49f655fbbfd4e2ade24bd3c64"
 uuid = "9a7e659c-8ee8-5706-894e-f68f43bc57ea"

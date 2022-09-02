@@ -2,7 +2,7 @@ module ItsLive
 
 using DataFrames
 using ArchGDAL
-using Proj4
+using Proj
 using AWS
 using Zarr
 using NamedArrays
