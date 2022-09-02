@@ -18,7 +18,6 @@ using NearestNeighbors
 include("general/binstats.jl")
 include("general/running_mean.jl")
 include("general/decimalyear.jl")
-
 include("datacube/catalog.jl")
 include("datacube/intersect.jl")
 include("datacube/nearestxy.jl")
