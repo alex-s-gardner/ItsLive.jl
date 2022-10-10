@@ -64,7 +64,7 @@ vind = Vector{Int64}()
 # select variable to extract
 # varnames = ["vx"]
 
-for row in urows
+Threads.@threads for row in urows
     # check if row is "missing"
     if ismissing(row)
         ind0 = findall(ismissing.(rows))
