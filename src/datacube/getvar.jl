@@ -64,7 +64,7 @@ vind = Vector{Int64}()
 # select variable to extract
 # varnames = ["vx"]
 
-Threads.@threads for row in urows
+for row in urows
     # check if row is "missing"
     if ismissing(row)
         ind0 = findall(ismissing.(rows))
@@ -101,7 +101,7 @@ Threads.@threads for row in urows
 
     # extract timeseries from datacube
 
-    # loop for each r and c
+    # loop for each variable
     Threads.@threads for j = 1:lastindex(varnames)
 
         if ndims(dc[varnames[j]]) == 1
