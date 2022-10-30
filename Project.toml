@@ -22,7 +22,7 @@ Zarr = "0a941bbe-ad1d-11e8-39d9-ab76183a1d99"
 
 [compat]
 AWS = "^1.74"
-ArchGDAL = "^0.7"
+ArchGDAL = ">= 0.7"
 BSplineKit = "^0.8"
 DataFrames = "^1.0"
 DateFormats = "^0.1"
