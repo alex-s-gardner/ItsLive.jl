@@ -23,9 +23,8 @@ julia> getvar(69.1,-49.4, ["mid_date", "v"], catalogdf)
 # Author
 Alex S. Gardner, JPL, Caltech.
 """
-function getvar(lat::Union{Vector,Number},lon::Union{Vector,Number}, varnames::Union{String, Vector{String}}, catalogdf)
+function getvar(lat::Union{Vector,Number},lon::Union{Vector,Number}, varnames::Union{String, Vector{String}}, catalogdf::DataFrame)
     
-
 # check that lat is within range
 if any(lat .<-90) || any(lat .> 90)
     error("lat = $lat, not in range [-90 to 90]")
@@ -64,6 +63,7 @@ vind = Vector{Int64}()
 
 # select variable to extract
 # varnames = ["vx"]
+
 for row in urows
     # check if row is "missing"
     if ismissing(row)
@@ -95,17 +95,18 @@ for row in urows
     cind[ind0] .= c
     
     ## print row and column
-    #println(path2cube)
-    #println("row = $r, column = $c")
+    # println(path2cube)
+    # println("row = ", r, ", col = ", c)
+
 
     # extract timeseries from datacube
-
-    # loop for each r and c
-    Threads.@threads for j = 1:lastindex(varnames)
-
+    
+    # loop for each variable
+    Threads.@threads for j = eachindex(varnames)
+    # for j in eachindex(varnames)
         if ndims(dc[varnames[j]]) == 1
             foo = dc[varnames[j]][:]
-            for i = 1:lastindex(r)
+            for i in eachindex(r)
                 push!(C, foo)
                 push!(ind, ind0[i])
                 push!(vind, j)

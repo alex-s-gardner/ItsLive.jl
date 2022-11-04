@@ -3,7 +3,7 @@
 
 return the `xind`/`yind` indices into a ZarrGroup (`dc`) for the points nearest the provided `lat`, `lon` locations
 
-using Proj4
+using Proj
 
 # Example
 
@@ -44,7 +44,7 @@ function nearestxy(lat::Union{Vector,Number}, lon::Union{Vector,Number}, dc::ZGr
   end
   
   # convert lat and lon into projected datacube coordinates
-  trans = Proj4.Transformation("EPSG:4326", "EPSG:" * dc.attrs["projection"])
+  trans = Proj.Transformation("EPSG:4326", "EPSG:" * dc.attrs["projection"])
   pt = trans.(eachrow(hcat(lat, lon)))
 
   # find the nearest x/y location with 1 full gridcell distance

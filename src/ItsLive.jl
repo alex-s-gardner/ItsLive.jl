@@ -1,11 +1,12 @@
 module ItsLive
 
-import DataFrames
-import ArchGDAL
-import Proj4
+using DataFrames
+using ArchGDAL
+using Proj
 using AWS
 using Zarr
 using NamedArrays
+using OrderedCollections
 using Statistics
 using DateFormats
 using BSplineKit
@@ -17,7 +18,6 @@ using NearestNeighbors
 include("general/binstats.jl")
 include("general/running_mean.jl")
 include("general/decimalyear.jl")
-
 include("datacube/catalog.jl")
 include("datacube/intersect.jl")
 include("datacube/nearestxy.jl")
@@ -36,4 +36,10 @@ include("datacube/plotbysensor.jl")
 include("datacube/sensorfilter.jl")
 include("datacube/plotvar.jl")
 include("datacube/save2h5.jl")
-end # modulepl  
+
+# precompile functions
+precompile(plotvar,(NamedMatrix{Any, Matrix{Any}, Tuple{OrderedDict{String, Int64}, OrderedDict{String, Int64}}}, String, Number))
+precompile(getvar, (Union{Vector,Number},Union{Vector,Number}, Union{String, Vector{String}}, DataFrame))
+precompile(catalog, ())
+
+end # module
