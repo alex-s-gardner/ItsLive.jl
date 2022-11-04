@@ -100,10 +100,10 @@ for row in urows
 
 
     # extract timeseries from datacube
-
+    
     # loop for each variable
     Threads.@threads for j = eachindex(varnames)
-    #for j in eachindex(varnames)
+    # for j in eachindex(varnames)
         if ndims(dc[varnames[j]]) == 1
             foo = dc[varnames[j]][:]
             for i in eachindex(r)
