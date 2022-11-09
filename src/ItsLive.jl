@@ -9,7 +9,7 @@ using OrderedCollections
 using Statistics
 using DateFormats
 using BSplineKit
-using FastRunningMedian
+#using FastRunningMedian
 using Polynomials
 using Plots
 using NearestNeighbors
@@ -26,7 +26,7 @@ include("general/decimalyear.jl")
 include("datacube/intersect.jl")
 include("datacube/nearestxy.jl")
 include("datacube/dtfilter.jl")
-include("datacube/vxvyfilter.jl")
+#include("datacube/vxvyfilter.jl")
 include("datacube/lsqfit_annual.jl")
 include("datacube/lsqfit_interp.jl")
 include("datacube/design_matrix.jl")
