@@ -1,13 +1,13 @@
 """
-    C = getvar(lat,lon, varnames, catalogdf])
+    df = getvar(lat, lon, varnames, catalogdf)
 
-return a named m x n matrix of vectors (`C`) with m = length(`lat`) rows 
+return a DataFrame (`df`) with m = length(`lat`) rows 
 and n = length(`varnames`)+2(for `lat` and `lon`) columns for the points nearest 
 the `lat`/`lon` location from ITS_LIVE Zarr datacubes
 
 use `catalog.jl` to generate the DataFrame catalog (`catalogdf`) of the ITS_LIVE zarr datacubes
 
-using DataFrames Dates NamedArrays
+using DataFrames Dates
 
 # Example
 ```julia
@@ -20,8 +20,6 @@ julia> getvar(69.1,-49.4, ["mid_date", "v"], catalogdf)
    - `varnames::Unions{String, Vector{String}}`: name of variables to extract from Zarr DataFrame
    - `catalogdf::DataFrame`: DataFrame catalog of the ITS_LIVE zarr datacubes
 
-# Author
-Alex S. Gardner, JPL, Caltech.
 """
 function getvar(lat::Union{Vector,Number},lon::Union{Vector,Number}, varnames::Union{String, Vector{String}}, catalogdf::DataFrame)
     
@@ -33,6 +31,11 @@ end
 # check that lon is within range
 if any(lon .<-180) || any(lon .> 180)
     error("lon = $lon, not in range [-180 to 180]")
+end
+
+# check that lon are the same length
+if length(lon) != length(lat)
+    error("lon and lat are not the same length")
 end
 
 # check that catalog is a dataframe
@@ -52,28 +55,30 @@ end
 # find the DataFrame rows of the datacube that intersect a series of lat/lon points
 rows = ItsLive.intersect.(lat,lon, Ref(catalogdf))
 
-# find all unique datacubes (mutiple points can intersect the same cube)
+# find all unique datacubes (mutiple points can intersect the same datacube)
 urows = unique(rows)
 
-rind = zeros(size(lat))
-cind = zeros(size(lat))
-C = Vector{Vector{Union{Missing, Any}}}()
-ind = Vector{Int64}()
-vind = Vector{Int64}()
+C = Vector{Vector{Vector{Union{Missing, Any}}}}()
+ind = Vector{Vector{Int64}}()
+vind = Vector{Vector{Int64}}()
 
-# select variable to extract
-# varnames = ["vx"]
+for i in 1:Threads.nthreads()
+    push!(C,Vector{Vector{Union{Missing, Any}}}())
+    push!(ind,Vector{Int64}())
+    push!(vind,Vector{Int64}())
+end
 
+# parallel loop over variables (not rows) is most efficient in nearly all cases
 for row in urows
     # check if row is "missing"
     if ismissing(row)
         ind0 = findall(ismissing.(rows))
 
-        for j = 1:lastindex(varnames)
-            for i = 1:lastindex(ind0)
-                push!(C, [missing])
-                push!(ind, ind0[i])
-                push!(vind, j)
+        for j in eachindex(varnames)
+            for i in eachindex(ind0)
+                push!(C[1], [missing])
+                push!(ind[1], ind0[i])
+                push!(vind[1], j)
             end
         end
         continue
@@ -90,38 +95,41 @@ for row in urows
 
     # find closest point 
     # NOTE: in Zarr cube "x" changes along rows (r) and "y" changes along columns (c)
-    r, c = ItsLive.nearestxy(lat[ind0], lon[ind0], dc)
-    rind[ind0] .= r
-    cind[ind0] .= c
+    cartind = ItsLive.nearestxy(lat[ind0], lon[ind0], dc)
     
     ## print row and column
     # println(path2cube)
     # println("row = ", r, ", col = ", c)
 
-
     # extract timeseries from datacube
     
     # loop for each variable
-    Threads.@threads for j = eachindex(varnames)
-    # for j in eachindex(varnames)
+    Threads.@threads for j in eachindex(varnames)
+    #for j in eachindex(varnames)
         if ndims(dc[varnames[j]]) == 1
             foo = dc[varnames[j]][:]
-            for i in eachindex(r)
-                push!(C, foo)
-                push!(ind, ind0[i])
-                push!(vind, j)
+            for i in eachindex(cartind)
+                push!(C[Threads.threadid()], foo)
+                push!(ind[Threads.threadid()], ind0[i])
+                push!(vind[Threads.threadid()], j)
             end
         elseif ndims(dc[varnames[j]]) == 3
-            for i = 1:lastindex(r)
-                push!(C, dc[varnames[j]][r[i], c[i], :])
-                push!(ind, ind0[i])
-                push!(vind, j)
+            push!(C[Threads.threadid()], dropdims(dc[varnames[j]][cartind,:]; dims=1))
+
+            for i in eachindex(cartesianind)
+                push!(ind[Threads.threadid()], ind0[i])
+                push!(vind[Threads.threadid()], j)
             end
         else
             error([varnames[j] " is not a 1D or 3D variable"])
         end
     end
-end 
+end
+
+# concat idividual thread arrays
+C = vcat(C...)
+ind = vcat(ind...)
+vind = vcat(vind...)
 
 # arrange for rows of location (lat/lon) and columns of variables
 
@@ -140,9 +148,9 @@ C = C[i,:]
 # add lat/lon to matrix
 C = hcat(lat,lon,C)
 
-# add naming to matrix
-C = NamedArrays.NamedArray(C)
-NamedArrays.setnames!(C, vcat("lat","lon",varnames), 2)
+# create a DataFrame
+df = DataFrame()
+vars = vcat("lat", "lon",varnames);
 
 # find datetime variables and convert 
 datevarnames = ["acquisition_date_img2", "acquisition_date_img1", "date_center", "mid_date"]
@@ -154,23 +162,32 @@ SecondMissing(x::Missing) = missing;
 SecondMissing(x::Number) =  Dates.Second(x); 
 npdt64_to_dt(t) =  SecondMissing.((round.(t.*86400))) .+ Dates.DateTime(1970) 
 
-a = Base.intersect(varnames, datevarnames)
+for j in findall(in(datevarnames),vars)
+    C[:,j] = [npdt64_to_dt.(row[1]) for row = eachrow(C[:,j])]
+end
 
-for j = 1:length(a)
-    for i = 1:size(C,1)
-        C[i,a[j]]= npdt64_to_dt(C[i,a[j]])
+
+# define a function to convert fixed type.. also convert Zarr.MaxLengthStrings.MaxLengthString
+# to Stings as Zarr.MaxLengthStrings to play nice with other packages like Arrow.jl
+function convertvec(x)
+    if (x[1] isa Zarr.MaxLengthStrings.MaxLengthString{1, UInt32}) || 
+        (x[1] isa Zarr.MaxLengthStrings.MaxLengthString{2, UInt32}) ||
+        (x[1] isa Zarr.MaxLengthStrings.MaxLengthString{3, UInt32}) ||
+        (x[1] isa Zarr.MaxLengthStrings.MaxLengthString{32, UInt32})
+        x = convert(Vector{String}, x)
+    else
+        x = convert(Vector{typeof(x[1])}, x)
     end
 end
 
-# convert other numeric variables to Float64. This is done to make future function type transparent
-a = setdiff(varnames, datevarnames)
-for j = 1:length(a)
-    if  isa(C[1,a[j]][1], Union{Number, Missing})
-        for i = 1:size(C,1)
-            C[i,a[j]]= convert.(Union{Missing, Float64},(C[i,a[j]]))
-        end
+# convert data types
+for i in eachindex(vars)
+    if any(vars[i] .== ["lat", "lon"])
+        df[!,vars[i]] = convert(Vector{Float64},C[:,i])
+    else
+        df[!,vars[i]] =  [convertvec(row[1]) for row in eachrow(C[:,i])]; #convert.(Float64,C[:,i])
     end
 end
 
-return C 
+return df
 end

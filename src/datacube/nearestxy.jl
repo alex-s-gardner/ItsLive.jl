@@ -1,7 +1,7 @@
 """
-  xind, yind = nearestxy(lat,lon,dc)
+CartesianIndex = nearestxy(lat,lon,dc)
 
-return the `xind`/`yind` indices into a ZarrGroup (`dc`) for the points nearest the provided `lat`, `lon` locations
+return the `CartesianIndex` indices into a ZarrGroup (`dc`) for the points nearest the provided `lat`, `lon` locations
 
 using Proj
 
@@ -15,9 +15,6 @@ julia> nearestxy(lat,lon,dc)
    - `lat::::Union{Vector,Number}`: latitude between -90 and 90 degrees
    - `lon::::Union{Vector,Number}`: latitude between -180 and 180 degrees
    - `dc:::ZGroup{Zarr.ConsolidatedStore{Zarr.HTTPStore}}`: ITS_LIVE data cube:: Zarr DataArray 
-
-# Author
-Alex S. Gardner, JPL, Caltech.
 """
 function nearestxy(lat::Union{Vector,Number}, lon::Union{Vector,Number}, dc::ZGroup{Zarr.ConsolidatedStore{Zarr.HTTPStore}})
   # check that lat is within range
@@ -54,5 +51,6 @@ function nearestxy(lat::Union{Vector,Number}, lon::Union{Vector,Number}, dc::ZGr
   xind = round.(Int,xind)
   yind = round.(Int,yind)
 
-  return xind, yind
+  return CartesianIndex.(xind',yind')
+
 end

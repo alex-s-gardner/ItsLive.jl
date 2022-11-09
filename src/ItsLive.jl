@@ -5,7 +5,6 @@ using ArchGDAL
 using Proj
 using AWS
 using Zarr
-using NamedArrays
 using OrderedCollections
 using Statistics
 using DateFormats
@@ -15,13 +14,17 @@ using Polynomials
 using Plots
 using NearestNeighbors
 
+include("datacube/catalog.jl")
+include("datacube/getvar.jl")
+include("general/vector2element.jl")
+
+export catalog, getvar, vector2element
+
 include("general/binstats.jl")
 include("general/running_mean.jl")
 include("general/decimalyear.jl")
-include("datacube/catalog.jl")
 include("datacube/intersect.jl")
 include("datacube/nearestxy.jl")
-include("datacube/getvar.jl")
 include("datacube/dtfilter.jl")
 include("datacube/vxvyfilter.jl")
 include("datacube/lsqfit_annual.jl")
@@ -37,9 +40,5 @@ include("datacube/sensorfilter.jl")
 include("datacube/plotvar.jl")
 include("datacube/save2h5.jl")
 
-# precompile functions
-precompile(plotvar,(NamedMatrix{Any, Matrix{Any}, Tuple{OrderedDict{String, Int64}, OrderedDict{String, Int64}}}, String, Number))
-precompile(getvar, (Union{Vector,Number},Union{Vector,Number}, Union{String, Vector{String}}, DataFrame))
-precompile(catalog, ())
 
 end # module

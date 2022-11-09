@@ -17,11 +17,8 @@ julia> intersect(69.1,-49.4, catalogdf)
    - `lat::Number`: latitude between -90 and 90 degrees
    - `lon::Number`: latitude between -180 and 180 degrees
    - `catalogdf::DataFrame`: DataFrame catalog of the ITS_LIVE zarr datacubes
-
-# Author
-Alex S. Gardner, JPL, Caltech.
 """
-function intersect(lat::Number,lon::Number, catalogdf)
+function intersect(lat::Number,lon::Number, catalogdf::DataFrame)
 # set up aws configuration
 
     # check that lat is within range
@@ -32,11 +29,6 @@ function intersect(lat::Number,lon::Number, catalogdf)
     # check that lon is within range
     if lon <-180 || lon > 180
         error("lon = $lon, not in range [-180 to 180]")
-    end
-
-    # check that catalog is a dataframe
-    if ~(catalogdf isa DataFrames.DataFrame)
-        error("provided catalog is not a DataFrame, use catalog.jl to generate a DataFrame")
     end
 
     # define a point

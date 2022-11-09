@@ -1,26 +1,19 @@
 """
-    catalog([catalog_geojson::String])
+    catalog(;catalog_geojson::String)
 
 return a DataFrame (`catalogdf`) of the catalog for all of the ITS_LIVE zarr datacubes. 
 User can optionally provide the path to `catalog_geojson`
 
-using ArchGDAL, DataFrames
-
 # Example no inputs
 ```julia
-julia> catalog()
+julia> catalogdf = catalog()
 ```
 
 ```julia
-julia> catalog(catalog_geojson = "path/to/catalog.json")
+julia> catalogdf = catalog(catalog_geojson = "path/to/catalog.json")
 ```
-
-# Arguments
-   - `catalog_geojson::String`: path to geojson catalog of ITS_LIVE datacubes
-
-# Author
-Alex S. Gardner, JPL, Caltech.
 """
+
 function catalog(catalog_geojson::String = "https://its-live-data.s3.amazonaws.com/datacubes/catalog_v02.json")
 # set up aws configuration
 
@@ -31,6 +24,6 @@ function catalog(catalog_geojson::String = "https://its-live-data.s3.amazonaws.c
     layer = ArchGDAL.getlayer(catalog, 0)
 
     # convert to a dataframe
-    catalogdf = DataFrames.DataFrame(layer)
+    catalogdf = DataFrame(layer)
     return catalogdf
 end
