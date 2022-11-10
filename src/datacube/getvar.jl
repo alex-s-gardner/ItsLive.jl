@@ -19,7 +19,7 @@ julia> getvar(69.1,-49.4, ["mid_date", "v"], catalogdf)
    - `lon::Union{Vector,Number}`: latitude between -180 and 180 degrees
    - `varnames::Unions{String, Vector{String}}`: name of variables to extract from Zarr DataFrame
    - `catalogdf::DataFrame`: DataFrame catalog of the ITS_LIVE zarr datacubes
-   - `s3 =false`: keyword argument for using s3 vs https paths [optional] 
+   - `s3 =false`: keyword argument for using s3 vs https paths [optional]
 
 """
 function getvar(lat::Union{Vector,Number},lon::Union{Vector,Number}, varnames::Union{String, Vector{String}}, catalogdf::DataFrame; s3 = false)
@@ -183,7 +183,11 @@ function convertvec(x)
         (x[1] isa Zarr.MaxLengthStrings.MaxLengthString{32, UInt32})
         x = convert(Vector{String}, x)
     else
-        x = convert(Vector{typeof(x[1])}, x)
+        if any(ismissing.(x))
+            x = convert(Union{Missing, Vector{typeof(x[1])}}, x)
+        else
+            x = convert(Vector{typeof(x[1])}, x)
+        end
     end
 end
 
