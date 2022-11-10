@@ -191,7 +191,15 @@ function convertvec(x)
 
     else
         if any(ismissing.(x))
-            x = convert(Vector{Union{Missing, typeof(x[1])}}, x)
+            data_types = unique(typeof.(x))
+            data_types = data_types[data_types .!= Missing];
+            if isempty(data_types)
+                x = convert(Vector{Missing}, x)
+            elseif length(data_types) == 1
+                x = convert(Vector{Union{Missing, data_types}}, x)
+            else
+                error("non uniform data type")
+            end
         else
             x = convert(Vector{typeof(x[1])}, x)
         end
