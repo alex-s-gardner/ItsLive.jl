@@ -181,7 +181,12 @@ function convertvec(x)
         (x[1] isa Zarr.MaxLengthStrings.MaxLengthString{2, UInt32}) ||
         (x[1] isa Zarr.MaxLengthStrings.MaxLengthString{3, UInt32}) ||
         (x[1] isa Zarr.MaxLengthStrings.MaxLengthString{32, UInt32})
-        x = convert(Vector{String}, x)
+
+        if any(ismissing.(x))
+            x = convert(Union{Missing,Vector{String}}, x) 
+        end
+            x = convert(Vector{String}, x)
+    end
     else
         if any(ismissing.(x))
             x = convert(Union{Missing, Vector{typeof(x[1])}}, x)
