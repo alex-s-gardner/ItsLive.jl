@@ -176,7 +176,9 @@ end
 # define a function to convert fixed type.. also convert Zarr.MaxLengthStrings.MaxLengthString
 # to Stings as Zarr.MaxLengthStrings to play nice with other packages like Arrow.jl
 function convertvec(x)
-    if (x[1] isa Zarr.MaxLengthStrings.MaxLengthString{1, UInt32}) || 
+    if length(x) == 1 && ismissing(x[1])
+        x = missing
+    elseif (x[1] isa Zarr.MaxLengthStrings.MaxLengthString{1, UInt32}) || 
         (x[1] isa Zarr.MaxLengthStrings.MaxLengthString{2, UInt32}) ||
         (x[1] isa Zarr.MaxLengthStrings.MaxLengthString{3, UInt32}) ||
         (x[1] isa Zarr.MaxLengthStrings.MaxLengthString{32, UInt32})
