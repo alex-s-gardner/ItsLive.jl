@@ -184,9 +184,9 @@ function convertvec(x)
 
         if any(ismissing.(x))
             x = convert(Union{Missing,Vector{String}}, x) 
-        end
+        else
             x = convert(Vector{String}, x)
-    end
+        end
     else
         if any(ismissing.(x))
             x = convert(Union{Missing, Vector{typeof(x[1])}}, x)
