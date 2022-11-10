@@ -182,10 +182,11 @@ function convertvec(x)
         (x[1] isa Zarr.MaxLengthStrings.MaxLengthString{32, UInt32})
 
         if any(ismissing.(x))
-            x = convert(Union{Vector{Missing},Vector{String}}, x) 
-        else
-            x = convert(Vector{String}, x)
+            x[ismissing.(x)] .= "NA"
         end
+        
+         x = convert(Vector{String}, x)
+
     else
         if any(ismissing.(x))
             x = convert(Union{Vector{Missing}, Vector{typeof(x[1])}}, x)
