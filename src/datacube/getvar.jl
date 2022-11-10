@@ -196,7 +196,7 @@ function convertvec(x)
             if isempty(data_types)
                 x = convert(Vector{Missing}, x)
             elseif length(data_types) == 1
-                x = convert(Vector{Union{Missing, data_types}}, x)
+                x = convert(Vector{Union{Missing, data_types[1]}}, x)
             else
                 error("non uniform data type")
             end
