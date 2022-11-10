@@ -1,5 +1,5 @@
 """
-    df = getvar(lat, lon, varnames, catalogdf)
+    df = getvar(lat, lon, varnames, catalogdf; s3 = false)
 
 return a DataFrame (`df`) with m = length(`lat`) rows 
 and n = length(`varnames`)+2(for `lat` and `lon`) columns for the points nearest 
@@ -19,9 +19,10 @@ julia> getvar(69.1,-49.4, ["mid_date", "v"], catalogdf)
    - `lon::Union{Vector,Number}`: latitude between -180 and 180 degrees
    - `varnames::Unions{String, Vector{String}}`: name of variables to extract from Zarr DataFrame
    - `catalogdf::DataFrame`: DataFrame catalog of the ITS_LIVE zarr datacubes
+   - `s3 =false`: keyword argument for using s3 vs https paths [optional] 
 
 """
-function getvar(lat::Union{Vector,Number},lon::Union{Vector,Number}, varnames::Union{String, Vector{String}}, catalogdf::DataFrame)
+function getvar(lat::Union{Vector,Number},lon::Union{Vector,Number}, varnames::Union{String, Vector{String}}, catalogdf::DataFrame; s3 = false)
     
 # check that lat is within range
 if any(lat .<-90) || any(lat .> 90)
@@ -55,6 +56,12 @@ end
 # find the DataFrame rows of the datacube that intersect a series of lat/lon points
 rows = ItsLive.intersect.(lat,lon, Ref(catalogdf))
 
+# extract urls
+zarr_url = catalogdf[!,"zarr_url"]
+if s3
+    zarr_url = replace.(zarr_url, "http://its-live-data.s3.amazonaws.com" => "s3://its-live-data")
+end
+
 # find all unique datacubes (mutiple points can intersect the same datacube)
 urows = unique(rows)
 
@@ -85,7 +92,7 @@ for row in urows
     end
 
     # extract path to Zarr datacube file
-    path2cube = catalogdf[row,"zarr_url"]
+    path2cube = zarr_url[row]
 
     # load Zarr group
     dc = Zarr.zopen(path2cube; fill_as_missing = true)
