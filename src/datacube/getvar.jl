@@ -173,7 +173,6 @@ for j in findall(in(datevarnames),vars)
     C[:,j] = [npdt64_to_dt.(row[1]) for row = eachrow(C[:,j])]
 end
 
-
 # define a function to convert fixed type.. also convert Zarr.MaxLengthStrings.MaxLengthString
 # to Stings as Zarr.MaxLengthStrings to play nice with other packages like Arrow.jl
 function convertvec(x)
@@ -183,13 +182,13 @@ function convertvec(x)
         (x[1] isa Zarr.MaxLengthStrings.MaxLengthString{32, UInt32})
 
         if any(ismissing.(x))
-            x = convert(Union{Missing,Vector{String}}, x) 
+            x = convert(Union{Vector{Missing},Vector{String}}, x) 
         else
             x = convert(Vector{String}, x)
         end
     else
         if any(ismissing.(x))
-            x = convert(Union{Missing, Vector{typeof(x[1])}}, x)
+            x = convert(Union{Vector{Missing}, Vector{typeof(x[1])}}, x)
         else
             x = convert(Vector{typeof(x[1])}, x)
         end
