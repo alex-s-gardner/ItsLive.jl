@@ -88,7 +88,7 @@ for row in urows
     path2cube = catalogdf[row,"zarr_url"]
 
     # load Zarr group
-    dc = Zarr.zopen(path2cube)
+    dc = Zarr.zopen(path2cube; fill_as_missing = true)
 
     # find lat/lon values that intersect datacube
     ind0 = findall(x -> x==row, skipmissing(rows))
