@@ -3,7 +3,7 @@ module ItsLive
 using DataFrames
 using ArchGDAL
 using Proj
-using AWS
+#using AWS
 using Zarr
 using OrderedCollections
 using Statistics
