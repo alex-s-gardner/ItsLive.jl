@@ -14,9 +14,9 @@ julia> nearestxy(lat,lon,dc)
 # Arguments
    - `lat::::Union{Vector,Number}`: latitude between -90 and 90 degrees
    - `lon::::Union{Vector,Number}`: latitude between -180 and 180 degrees
-   - `dc:::ZGroup{Zarr.ConsolidatedStore{Zarr.HTTPStore}}`: ITS_LIVE data cube:: Zarr DataArray 
+   - `dc:::Union{ZGroup{Zarr.ConsolidatedStore{Zarr.HTTPStore}}, ZGroup{S3Store}}`: ITS_LIVE data cube:: Zarr DataArray 
 """
-function nearestxy(lat::Union{Vector,Number}, lon::Union{Vector,Number}, dc::Union{ZGroup{Zarr.ConsolidatedStore{Zarr.HTTPStore}}, ZGroup{S3Store}})
+function nearestxy(lat::Union{Vector,Number}, lon::Union{Vector,Number}, dc::Union{ZGroup{Zarr.ConsolidatedStore{Zarr.HTTPStore}}, ZGroup{S3Store}, ZGroup{Zarr.ConsolidatedStore{Zarr.ConsolidatedStore{Zarr.HTTPStore}}}})
   # check that lat is within range
   if any(lat .< -90) || any(lat .> 90)
     error("lat = $lat, not in range [-90 to 90]")
