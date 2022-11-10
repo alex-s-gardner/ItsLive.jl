@@ -191,7 +191,7 @@ function convertvec(x)
 
     else
         if any(ismissing.(x))
-            x = convert(Union{Vector{Missing}, Vector{typeof(x[1])}}, x)
+            x = convert(Vector{Union{Missing, typeof(x[1])}}, x)
         else
             x = convert(Vector{typeof(x[1])}, x)
         end
