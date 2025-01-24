@@ -21,17 +21,4 @@ Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 Zarr = "0a941bbe-ad1d-11e8-39d9-ab76183a1d99"
 
 [compat]
-AWS = ">= 1.74"
-ArchGDAL = ">= 0.7"
-BSplineKit = "^0.8"
-DataFrames = ">= 1.0"
-DateFormats = ">= 0.1"
-FastRunningMedian = ">= 0.1"
-HDF5 = ">= 0.16"
-NamedArrays = "^0.9"
-NearestNeighbors = "^0.4"
-OrderedCollections = "^1.4"
-Plots = "^1.25"
-Polynomials = "^3.0"
-Statistics = "^1.5"
-Zarr = ">= 0.3"
+
