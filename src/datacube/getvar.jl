@@ -93,7 +93,7 @@ for row in urows
     r, c = ItsLive.nearestxy(lat[ind0], lon[ind0], dc)
     rind[ind0] .= r
     cind[ind0] .= c
-    
+
     ## print row and column
     # println(path2cube)
     # println("row = ", r, ", col = ", c)

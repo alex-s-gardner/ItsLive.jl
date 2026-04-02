@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(julia:*)",
+      "WebSearch",
+      "WebFetch(domain:juliadatacubes.github.io)",
+      "WebFetch(domain:github.com)",
+      "Bash(grep:*)",
+      "WebFetch(domain:tc.copernicus.org)",
+      "WebFetch(domain:essd.copernicus.org)",
+      "WebFetch(domain:www.mdpi.com)",
+      "Bash(aws:*)",
+      "Bash(find ~/.julia/packages/TemporalDisaggregations -name *.jl)",
+      "Bash(find ~/.julia/packages -name *.jl -exec grep -l interval_average {})",
+      "Bash(2)",
+      "Bash(find ~/.julia/packages/Optim -name *.jl -exec grep -l NelderMead {})",
+      "Bash(find ~/.julia/packages/AbstractGPs -name *.jl -exec grep -l \"gradient\\\\|Zygote\\\\|ChainRules\" {})",
+      "Bash(find ~/.julia/packages/KernelFunctions* -name \"*.jl\")",
+      "Bash(ls -la /Users/gardnera/Documents/GitHub/ItsLive.jl/*.md)"
+    ]
+  }
+}

@@ -34,8 +34,8 @@ function dtfilter(x, dt , binedges::Vector{Float64} = [0, 16, 32, 64, 128, 256, 
             medx = 0
             madx = 0
         else
-            medx = round(Int,Statistics.median(skipmissing(x)));
-            madx = round(Int,Statistics.median(skipmissing(abs.(x .- medx))));
+            medx = round(Int,median(skipmissing(x)));
+            madx = round(Int,median(skipmissing(abs.(x .- medx))));
         end
         return [medx, madx]
     end
