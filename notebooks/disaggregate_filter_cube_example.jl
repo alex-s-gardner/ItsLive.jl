@@ -45,25 +45,15 @@ end
 
 # ── 3. Disaggregation configuration ─────────────────────────────────────────
 begin
-    output_period = Month(1)
+    output_period = Week(1)
     loss_norm = :L1
     sigma_buffer = 2
     time_buffer = Month(1)
     observation_error_minimum = 20 # m/yr
     verbose = false
 
-    k =
-        10.0^2 * PeriodicKernel(r=[0.5]) * with_lengthscale(Matern52Kernel(), 0.3) +
-        50.0^2 * with_lengthscale(Matern52Kernel(), 3.0)
-
-    method = GP(
-        kernel=k,
-        obs_noise=1.0^2,
-    )
-
     method = Spline(smoothness=1e-3, tension=1)
 
-    #method = Sinusoid()
 end
 
 
@@ -148,8 +138,9 @@ begin
 
 end;
 
-@showprogress desc = "Fitting splines to cube..." for i in eachindex(x)[162:end]
 
+@showprogress desc = "Fitting splines to cube..." for i in eachindex(x)[162:end]
+#i = 258
     # --------- Pre-load the full (y × time) slice into memory before the threaded loop.
     # X(i) is positional indexing (i-th element along x); avoids per-pixel Zarr reads
     # inside @threads and ensures each Zarr chunk is read at most once per x step.
@@ -159,27 +150,38 @@ end;
     # pixels inside the loop, at the cost of more I/O.
 
     vx_col = permutedims(collect(rs[:vx][x=i]))::Array{Union{Missing, Int16}, 2}  # (nt × ny): each column is one pixel's time series
-    vy_col = all(ismissing.(vx_col)) ? continue : permutedims(collect(rs[:vy][x=i]))::Array{Union{Missing, Int16}, 2}
+    vy_col = permutedims(collect(rs[:vy][x=i]))::Array{Union{Missing, Int16}, 2}
 
-    @time Threads.@threads :greedy for j in eachindex(y)  # loop over y pixels; adjust range as needed for testing
+    # Optional: filter observations by granule type
+    granule_url = collect(rs[:granule_url])
+    rslc = occursin.("RSLC", granule_url)
+    gslc = .!rslc
+    # use_index = gslc  # Uncomment to use only GSLC observations
+    use_index = trues(length(t1))  # Use all observations
 
-        all(ismissing.(vy_col[:, j])) && continue  # skip if all vy values are missing (assumes vx is also missing, but check just in case)
+    # For single pixel testing, uncomment and set j:
+    j = 400
+    all(ismissing.(vy_col[:, j])) && error("All missing values at pixel j=$j")
 
-        try
-            vx_fit, vy_fit, valid_obs = ItsLive.disaggregate(
-                method, vx_col[:, j] ,vy_col[:, j], vx_err, vy_err, t1, t2, sensor_group_id;
-                output_start, output_end, output_period, loss_norm, sigma_buffer, time_buffer, verbose)
+    try
+        vx_fit, vy_fit, valid_obs = ItsLive.disaggregate(
+            method, vx_col[use_index, j], vy_col[use_index, j], vx_err[use_index], vy_err[use_index],
+            t1[use_index], t2[use_index], sensor_group_id[use_index];
+            output_start, output_end, output_period, loss_norm, sigma_buffer, time_buffer, verbose)
 
-            if !isnothing(vx_fit)
-                vx_out_data[:,i,j] = vx_fit.signal.data
-                vy_out_data[:,i,j] = vy_fit.signal.data
-            end
-        catch e
-            println("Error at pixel (x=$i; y=$j) ------------------------------------------")
-            rethrow(e)
+        if !isnothing(vx_fit)
+            vx_out_data[:,i,j] = vx_fit.signal.data
+            vy_out_data[:,i,j] = vy_fit.signal.data
         end
+    catch e
+        println("Error at pixel (x=$i; y=$j) ------------------------------------------")
+        rethrow(e)
     end
 end
+
+
+
+
 
 
 # ── 5. Figure — single-pixel: raw data, removed points, disaggregated signalbegin
