@@ -1,6 +1,8 @@
 
+
+
 const sensor_groupings = Dict{Int, @NamedTuple{id::Int, name::String, sensors::Vector{String}}}(
-    1 => (id=1, name="Sentinel 2", sensors=["2A", "2B", "2C", "2D"]),
+    1 => (id=1, name="Sentinel 2",   sensors=["2A", "2B", "2C", "2D"]), # <= id `1` is default reference group for inter-sensor comparison
     2 => (id=2, name="Landsat 8/9",  sensors=["8",  "9" , "10"]),
     3 => (id=3, name="Sentinel 1",   sensors=["1A", "1B", "1C", "1D"]),
     4 => (id=4, name="Landsat 7",    sensors=["7"       ]),

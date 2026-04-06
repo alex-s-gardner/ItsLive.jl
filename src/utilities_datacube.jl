@@ -178,7 +178,7 @@ end
 
 
 """
-    sensor_bias_filter(vx, vy, t1, t2, sensor_labels; ...) → BitVector
+    sensor_bias_filter(vx, vy, t1, t2, sensor_group_id; ...) → BitVector
 
 Detect and remove observations from sensor groups that produce velocities
 significantly slower than the reference sensor. For each sensor group, velocity
@@ -191,8 +191,8 @@ Returns a BitVector where `true` = keep observation.
 # Arguments
 - `vx`, `vy`: 1-D velocity components (m/yr, `Float64`)
 - `t1`, `t2`: DateTime vectors (acquisition dates)
-- `sensor_labels`: sensor identifier strings (e.g. from `satellite_img1` field)
-- `ref_group_id`: sensor group id used as reference (default: 1 = Sentinel-2)
+- `sensor_group_id`: sensor identifier strings (e.g. from `satellite_img1` field)
+- `ref_sensor_group_id`: sensor group id used as reference (default: 1 = Sentinel-2)
 - `dtmax_days`: only observations with dt ≤ this value are used for statistics (default: 64.0)
 - `bin_width`: temporal bin width as a Period in DateTime space (default: `Month(2)`)
 - `mincount`: minimum observations per sensor per bin (default: 3)
@@ -206,23 +206,24 @@ function sensor_bias_filter(
     vy::AbstractVector,
     t1::AbstractVector,
     t2::AbstractVector,
-    sensor_labels::AbstractVector;
-    ref_group_id::Int   = 1,
-    dtmax_days::Float64 = 64.0,
-    bin_width::Period   = Month(2),
-    mincount::Int       = 3,
-    sescale::Float64    = 3.0,
+    sensor_group_id::AbstractVector;
+    ref_sensor_group_id::Int   = 1,
+    dtmax_days::Float64        = 64.0,
+    bin_width::Period          = Month(2),
+    mincount::Int              = 3,
+    sescale::Float64           = 3.0,
 )::BitVector
+
     n    = length(vx)
     keep = trues(n)
 
-    # Assign sensor group IDs for all observations
-    ids_all, sensor_groups = sensor_group(sensor_labels)
-    numsg = length(sensor_groups)
-
     # Early exit: only one (or zero) recognised sensor groups
-    unique_ids = unique(ids_all[ids_all .> 0])
+    unique_ids = unique(sensor_group_id[sensor_group_id .> 0])
+    numsg = length(unique_ids)
     length(unique_ids) <= 1 && return keep
+
+    # early exit: reference sensor group not present in data
+    !any(unique_ids .== ref_sensor_group_id) && return keep
 
     # Compute interval (days) and mid-date in DateTime space
     interval_days = Float64.(Dates.value.(t2 .- t1)) ./ 86_400_000.0
@@ -232,7 +233,7 @@ function sensor_bias_filter(
     valid = (interval_days .<= dtmax_days) .& _isvalid.(vx) .& _isvalid.(vy)
     any(valid) || return keep
 
-    ids_v = ids_all[valid]
+    ids_v = sensor_group_id[valid]
     vx_v  = Float64.(vx[valid])
     vy_v  = Float64.(vy[valid])
     md_v  = mid_date[valid]
@@ -249,14 +250,14 @@ function sensor_bias_filter(
     vstdbin   = fill(NaN, numsg, nbins)
     vcountbin = zeros(Int, numsg, nbins)
 
-    for sg in 1:numsg
-        sgind = ids_v .== sg
-        any(sgind) || continue
-
+    for i in eachindex(unique_ids)
+        sgind = ids_v .== unique_ids[i]
+    
         vx0 = Statistics.mean(vx_v[sgind])
         vy0 = Statistics.mean(vy_v[sgind])
         v0  = sqrt(vx0^2 + vy0^2)
-        v0 < 1.0 && continue
+        # Skip if v0 is non-finite or below threshold
+        (!isfinite(v0) || v0 < 1.0) && continue
 
         ux = vx0 / v0
         uy = vy0 / v0
@@ -267,26 +268,28 @@ function sensor_bias_filter(
             in_bin = (md_sg .>= bin_edges[b]) .& (md_sg .< bin_edges[b+1])
             count(in_bin) < mincount && continue
             seg = vp[in_bin]
-            vcountbin[sg, b] = count(in_bin)
-            vbin[sg, b]      = Statistics.mean(seg)
-            vstdbin[sg, b]   = length(seg) > 1 ? Statistics.std(seg) : NaN
+            vcountbin[i, b] = count(in_bin)
+            vbin[i, b]      = Statistics.mean(seg)
+            vstdbin[i, b]   = length(seg) > 1 ? Statistics.std(seg) : NaN
         end
     end
 
     # Compare each non-reference group to reference over co-valid bins
-    for sg in unique_ids
-        sg == ref_group_id && continue
+    ref_ind = findfirst(unique_ids .== ref_sensor_group_id)
+    for i in eachindex(unique_ids)
 
-        covalid = .!isnan.(vbin[ref_group_id, :]) .& .!isnan.(vbin[sg, :])
+        unique_ids[i] == ref_sensor_group_id && continue
+
+        covalid = .!isnan.(vbin[ref_ind, :]) .& .!isnan.(vbin[i, :])
         sum(covalid) < 2 && continue
 
-        delta = vbin[sg, covalid] .- vbin[ref_group_id, covalid]
+        delta = vbin[i, covalid] .- vbin[ref_ind, covalid]
         m = Statistics.mean(delta)
         s = Statistics.std(delta) / sqrt(sum(covalid) - 1)
 
         # Sensor is significantly slower than reference → exclude all its observations
         if (m + sescale * s) < 0
-            keep[ids_all .== sg] .= false
+            keep[sensor_group_id .== unique_ids[i]] .= false
         end
     end
 
@@ -294,16 +297,16 @@ function sensor_bias_filter(
 end
 
 """
-    id, sensor_groups= sensor_group(sensor)
+    sensor_group_id, sensor_groups = sensor_group(sensor)
 
-return the `sensor` group `id` and the corresponding `sensor_groups`
+return the `sensor` group `sensor_group_id` and the corresponding `sensor_groups`
 
 
 using Statistics
 
 # Example
 ```julia
-julia> id, sensor_groups = sensor_group(sensor)
+julia> sensor_group_id, sensor_groups = sensor_group(sensor)
 ```
 
 # Arguments
@@ -313,15 +316,15 @@ julia> id, sensor_groups = sensor_group(sensor)
 Alex S. Gardner, JPL, Caltech.
 """
 function sensor_group(sensor)
-    id = zeros(Int16, length(sensor))
+    sensor_group_id = zeros(Int16, length(sensor))
 
     for (sg, grp) in sensor_groupings
         for s in grp.sensors
-            id[s .== sensor] .= sg
+            sensor_group_id[s .== sensor] .= sg
         end
     end
 
-    return id, sensor_groupings
+    return sensor_group_id, sensor_groupings
 end
 
 
@@ -376,7 +379,7 @@ end
 
 
 """
-    valid_interval, interval_maximum, sensor_groups = interval_bias_filter(vx, vy, interval_millisecond; sensor)
+    valid_interval, interval_maximum, sensor_groups = interval_bias_filter(vx, vy, interval_millisecond; sensor_group_id)
 
 Identify observations where the velocity distribution shifts with longer image-pair
 separation — indicative of "skipping" or "locking" artifacts in feature tracking
@@ -386,11 +389,11 @@ glacier velocity estimates.
 - `vx`, `vy`: velocity components (m/yr)
 - `interval_millisecond`: image-pair separation in **milliseconds**
   (e.g. `Dates.value.(t2 .- t1)`)
-- `sensor`: sensor identifier strings; when provided, filtering is applied per group
+- `sensor_group_id`: sensor_group_id identifier; when provided, filtering is applied per group
 
 # Returns
 - `valid_interval::BitVector`: `true` = observation passes the filter (keep)
-- `interval_maximum`: maximum accepted separation (days) per sensor group (`Inf` = no limit)
+- `interval_maximum`: maximum accepted separation (days) per sensor_group_id group (`Inf` = no limit)
 - `sensor_groups`: sensor group metadata from `sensor_group()`
 
 # Author
@@ -400,7 +403,7 @@ function interval_bias_filter(
     vx::AbstractVector, 
     vy::AbstractVector,
     interval_days::AbstractVector;
-    sensor::AbstractVector = ["none"],
+    sensor_group_id::Union{AbstractVector,Nothing} = nothing,
     interval_class_edges=[0.0, 16.0, 32.0, 64.0, 128.0, 256.0, Inf],
     min_v0_threshold = 5.0,
     min_count_threshold = 50
@@ -419,8 +422,8 @@ function interval_bias_filter(
     vy0 = Statistics.median(Float64.(vy[ind]))
     v0  = sqrt(vx0^2 + vy0^2)
 
-    # Pixel too slow — locking indistinguishable from true signal
-    if v0 < min_v0_threshold
+    # Pixel too slow or non-finite — locking indistinguishable from true signal
+    if !isfinite(v0) || v0 < min_v0_threshold
         return valid_interval, Union{Missing,Float64}[Inf], [["none"]]
     end
 
@@ -428,7 +431,7 @@ function interval_bias_filter(
     uy = vy0 / v0
     vp = Float64.(vx) .* ux .+ Float64.(vy) .* uy
 
-    if sensor[1] == "none"
+    if isnothing(sensor_group_id)
         interval_maximum_v = _dtfilter(vp, interval_days, interval_class_edges)
         interval_maximum   = Union{Missing,Float64}[interval_maximum_v]
         if interval_maximum_v <= 20_000.0
@@ -436,18 +439,17 @@ function interval_bias_filter(
         end
         return valid_interval, interval_maximum, [["none"]]
     else
-        ids, sensor_groups = sensor_group(sensor)
-        interval_maximum = Vector{Union{Missing,Float64}}(missing, length(sensor_groups))
-        for sg in 1:length(sensor_groups)
-            sgind   = ids .== sg
-            any(sgind) || continue
+        unique_ids = unique(sensor_group_id[sensor_group_id.>0])
+        interval_maximum = Vector{Union{Missing,Float64}}(missing, length(unique_ids))
+        for i in eachindex(unique_ids)
+            sgind   = sensor_group_id .== unique_ids[i]
             interval_maximum_v    = _dtfilter(vp[sgind], interval_days[sgind], interval_class_edges)
-            interval_maximum[sg]  = interval_maximum_v
+            interval_maximum[i]  = interval_maximum_v
             if interval_maximum_v <= 20_000.0
                 valid_interval .&= (.!sgind) .| (interval_days .<= interval_maximum_v) .| ismissing.(vp)
             end
         end
-        return valid_interval, interval_maximum, sensor_groups
+        return valid_interval, interval_maximum, unique_ids
     end
 end
 
@@ -455,7 +457,7 @@ end
 
 
 """
-    disaggregate(method, vx, vy, vx_err, vy_err, t1, t2, sensor; kwargs...) -> (vx_fit, vy_fit, keep)
+    disaggregate(method, vx, vy, vx_err, vy_err, t1, t2, sensor_group_id; kwargs...) -> (vx_fit, vy_fit, keep)
 
 Fit a temporal disaggregation model to per-pixel ITS_LIVE glacier velocity observations
 using a two-stage filtering + re-inclusion pipeline:
@@ -511,7 +513,7 @@ restricted to the requested output window. This is the returned result.
 `length(vx)` indicating which original observations were used in the final fit.
 Returns `nothing` if fewer than 10 valid observations survive Stage 0.
 """
-function disaggregate(method, vx, vy, vx_err, vy_err, t1, t2, sensor;
+function disaggregate(method, vx, vy, vx_err, vy_err, t1, t2, sensor_group_id;
                       output_start=nothing, output_end=nothing,
                       output_period=Week(1), loss_norm=:L1,
                       sigma_buffer=2, time_buffer=Month(1), verbose=false)
@@ -519,6 +521,8 @@ function disaggregate(method, vx, vy, vx_err, vy_err, t1, t2, sensor;
     # ── Stage 0: coarse validity screen ──────────────────────────────────────
     valid_obs = (abs.(vx) .< 20000) .& (abs.(vy) .< 200000)
     valid_obs = coalesce.(valid_obs, false)
+    # Explicit check for finite values to catch NaN/Inf
+    valid_obs = valid_obs .& isfinite.(vx) .& isfinite.(vy)
 
     output_start1 = output_start - time_buffer
     output_end1 = output_end + time_buffer
@@ -531,7 +535,23 @@ function disaggregate(method, vx, vy, vx_err, vy_err, t1, t2, sensor;
     vy_err = Float64.(vy_err[valid_obs])
     t1     = t1[valid_obs]
     t2     = t2[valid_obs]
-    sensor = sensor[valid_obs]
+    sensor_group_id = sensor_group_id[valid_obs]
+
+    # Ensure error terms are finite and positive (prevents Inf from 1/err)
+    vx_err = max.(vx_err, 1e-6)  # Replace zeros/negatives with minimum
+    vy_err = max.(vy_err, 1e-6)
+
+    # Filter out non-finite errors
+    error_valid = isfinite.(vx_err) .& isfinite.(vy_err)
+    if !all(error_valid)
+        vx     = vx[error_valid]
+        vy     = vy[error_valid]
+        vx_err = vx_err[error_valid]
+        vy_err = vy_err[error_valid]
+        t1     = t1[error_valid]
+        t2     = t2[error_valid]
+        sensor_group_id = sensor_group_id[error_valid]
+    end
 
     # Convert DateTime difference (milliseconds) to fractional days
     interval_days = Float64.(Dates.value.(t2 .- t1)) ./ 86_400_000.0
@@ -542,16 +562,33 @@ function disaggregate(method, vx, vy, vx_err, vy_err, t1, t2, sensor;
     isnothing(output_end)   && (output_end   = maximum(t2))
 
     # ── Stage 1: sensor-bias  ────────────────────────────────────────────────
-    keep = ItsLive.sensor_bias_filter(vx, vy, t1, t2, sensor)
+    keep = ItsLive.sensor_bias_filter(vx, vy, t1, t2, sensor_group_id)
     n1 = sum(keep)
 
-    (n1 > length(decyear_out )) || return (nothing, nothing, nothing) 
+    if n1 <= length(decyear_out)
+        verbose && @warn "Insufficient observations after sensor filtering: $n1 obs for $(length(decyear_out)) output times"
+        return (nothing, nothing, nothing)
+    end 
 
     # ── Stage 2: interval-bias filters ───────────────────────────────────────
     keep[keep], _, _ = interval_bias_filter(
         vx[keep], vy[keep], interval_days[keep];
-        sensor=sensor[keep])
+        sensor_group_id=sensor_group_id[keep])
     n2 = sum(keep)
+
+    # ── Validation: Check for finite values before fitting ──────────────────
+    # Ensure all values are finite (no NaN/Inf)
+    if any(.!isfinite.(vx[keep])) || any(.!isfinite.(vy[keep]))
+        return (nothing, nothing, nothing)
+    end
+
+    # Ensure error terms are positive (needed for weights = 1/err)
+    if any(vx_err[keep] .<= 0) || any(vy_err[keep] .<= 0)
+        return (nothing, nothing, nothing)
+    end
+
+    # Ensure we have enough observations after filtering
+    sum(keep) < 10 && return (nothing, nothing, nothing)
 
     # ── Stage 3: first fit (build velocity-uncertainty corridor) ─────────────
     # Represent each observation as a horizontal line segment in (time, velocity)

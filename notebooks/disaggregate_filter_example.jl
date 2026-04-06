@@ -104,7 +104,7 @@ begin
 end;
 
 # ── 4. Extract pixel data & apply filters ───────────────────────────────────
-begin
+#begin
     # extract raw pixel values and observation intervals
     vx_err = Float64.(collect(rs[:vx_error]))
     vy_err = Float64.(collect(rs[:vy_error]))
@@ -113,6 +113,7 @@ begin
     t2 = collect(ItsLive.to_datetime(rs["acquisition_date_img2"]))
 
     sensor =  String.(collect(rs["satellite_img1"]))
+    sensor_group_id, sensor_groups = ItsLive.sensor_group(sensor)
     # mission_all = collect(rs["mission_img1"]).. error reading mission
 
     # set minimum error
@@ -128,7 +129,7 @@ begin
     output_end = Date(maximum(skipmissing(t2))) - time_buffer
 
     # Coarse validity screen
-    @time vx_fit, vy_fit, valid_obs = ItsLive.disaggregate(method, vx, vy, vx_err, vy_err, t1, t2, sensor; output_start, output_end, output_period, loss_norm, sigma_buffer, time_buffer, verbose);
+    @time vx_fit, vy_fit, valid_obs = ItsLive.disaggregate(method, vx, vy, vx_err, vy_err, t1, t2, sensor_group_id; output_start, output_end, output_period, loss_norm, sigma_buffer, time_buffer, verbose);
 end;
 
 # ── 5. Figure — single-pixel: raw data, removed points, disaggregated signals

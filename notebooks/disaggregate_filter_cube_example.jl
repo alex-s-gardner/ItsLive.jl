@@ -32,6 +32,7 @@ begin
 
     # For faster BLAS on macOS: 
     using AppleAccelerate 
+    using Profile
             
     #For faster BLAS on Intel Linux: 
     #using MKL
@@ -66,11 +67,10 @@ begin
 end
 
 
-  # ── 2. Locate datacube ───────────────────────────────────────────────────────
+# ── 2. Locate datacube ───────────────────────────────────────────────────────
 begin
     lat, lon = 60.0626, -139.3193   # Hubbard Glacier, Alaska
     zarr_path = ItsLive.datacube_path(lat, lon)
-    println("Zarr path: ", zarr_path)
 end
 
 begin
@@ -82,8 +82,8 @@ begin
     #savedataset(ds; path=zarr_path_local, driver=:zarr, overwrite=true)
 
     # Discover the datacube zarr URL from the ITS_LIVE catalog
-
     rs     = ItsLive.datacube_load(zarr_path_local)
+    #rs     = ItsLive.datacube_load(zarr_path)
 
 end;
 
@@ -94,10 +94,12 @@ begin
     t1 = collect(ItsLive.to_datetime(rs["acquisition_date_img1"]))
     t2 = collect(ItsLive.to_datetime(rs["acquisition_date_img2"]))
 
-    vx_err = ones(size(t1))
-    vy_err =  ones(size(t1))
+    vx_err = collect(ds[:vx_error])
+    vy_err = collect(ds[:vy_error])
 
     sensor =  String.(collect(rs["satellite_img1"]))
+    sensor_group_id, sensor_groups = ItsLive.sensor_group(sensor)
+    
     # mission_all = collect(rs["mission_img1"]).. error reading mission
 
     # set minimum error
@@ -124,7 +126,6 @@ begin
     # Coarse validity screen
     time_output = output_start:output_period:output_end
 
-
     m = length(time_output)
     n, p,_ = size(rs[:vx])
 end;
@@ -136,10 +137,16 @@ begin
     ti = Ti(time_output);
     vx_out = zeros(ti, x, y);
     vy_out = zeros(ti, x, y);
+
+    vx_out = zeros(ti, x, y);
+    vy_out = zeros(ti, x, y);
+
+    vx_out_data = vx_out.data;
+    vy_out_data = vy_out.data;
+
 end;
 
-@showprogress desc = "fitting splines" for i = eachindex(x)
-
+@showprogress desc = "Fitting splines to cube..." for i in eachindex(x)[162:end]
 
     # --------- Pre-load the full (y × time) slice into memory before the threaded loop.
     # X(i) is positional indexing (i-th element along x); avoids per-pixel Zarr reads
@@ -149,33 +156,24 @@ end;
     # chunking is inefficient. In that case, consider reading smaller y-slices or individual 
     # pixels inside the loop, at the cost of more I/O.
 
-    vx_col = permutedims(collect(rs[:vx][x=i]))  # (nt × ny): each column is one pixel's time series
-    if all(ismissing.(vx_col))
-        continue
-    end
+    vx_col = permutedims(collect(rs[:vx][x=i]))::Array{Union{Missing, Int16}, 2}  # (nt × ny): each column is one pixel's time series
+    vy_col = all(ismissing.(vx_col)) ? continue : permutedims(collect(rs[:vy][x=i]))::Array{Union{Missing, Int16}, 2}
 
-    vy_col = permutedims(collect(rs[:vy][x=i]))
+    @time Threads.@threads :greedy for j in eachindex(y)  # loop over y pixels; adjust range as needed for testing
 
-    @time Threads.@threads :greedy for j = eachindex(y)
-        vx_j = view(vx_col, :, j)     # contiguous column view — no allocation, no I/O
-        vy_j = view(vy_col, :, j)
-
-        if all(ismissing.(vx_j))
-            continue
-        end
+        all(ismissing.(vy_col[:, j])) && continue  # skip if all vy values are missing (assumes vx is also missing, but check just in case)
 
         try
             vx_fit, vy_fit, valid_obs = ItsLive.disaggregate(
-                method, vx_j, vy_j, vx_err, vy_err, t1, t2, sensor;
-                output_start, output_end, output_period,
-                loss_norm, sigma_buffer, time_buffer, verbose)
+                method, vx_col[:, j] ,vy_col[:, j], vx_err, vy_err, t1, t2, sensor_group_id;
+                output_start, output_end, output_period, loss_norm, sigma_buffer, time_buffer, verbose)
 
             if !isnothing(vx_fit)
-                vx_out[X=i, Y=j] = vx_fit.signal.data
-                vy_out[X=i, Y=j] = vy_fit.signal.data
+                vx_out_data[:,i,j] = vx_fit.signal.data
+                vy_out_data[:,i,j] = vy_fit.signal.data
             end
         catch e
-            println("Error at pixel (x=$i; y=$j)")
+            println("Error at pixel (x=$i; y=$j) ------------------------------------------")
             rethrow(e)
         end
     end
