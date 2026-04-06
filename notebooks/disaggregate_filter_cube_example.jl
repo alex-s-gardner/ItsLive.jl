@@ -78,6 +78,8 @@ begin
     ds = YAXArrays.open_dataset(Zarr.zopen(zarr_path), skip_keys=setdiff(keys(ds.cubes), (:vx, :vy, :vx_error, :vy_error, :acquisition_date_img1, :acquisition_date_img2, :satellite_img1)))
 
     local_dir = "/Users/gardnera/data/its-live-data/datacubes/v02"
+    #local_dir = "/mnt/devon-r3/data/test"
+
     zarr_path_local = joinpath(local_dir, last(splitpath(zarr_path)))
     #savedataset(ds; path=zarr_path_local, driver=:zarr, overwrite=true)
 
