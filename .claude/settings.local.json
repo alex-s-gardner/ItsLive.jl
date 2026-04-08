@@ -1,0 +1,37 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(julia:*)",
+      "WebSearch",
+      "WebFetch(domain:juliadatacubes.github.io)",
+      "WebFetch(domain:github.com)",
+      "Bash(grep:*)",
+      "WebFetch(domain:tc.copernicus.org)",
+      "WebFetch(domain:essd.copernicus.org)",
+      "WebFetch(domain:www.mdpi.com)",
+      "Bash(aws:*)",
+      "Bash(find ~/.julia/packages/TemporalDisaggregations -name *.jl)",
+      "Bash(find ~/.julia/packages -name *.jl -exec grep -l interval_average {})",
+      "Bash(2)",
+      "Bash(find ~/.julia/packages/Optim -name *.jl -exec grep -l NelderMead {})",
+      "Bash(find ~/.julia/packages/AbstractGPs -name *.jl -exec grep -l \"gradient\\\\|Zygote\\\\|ChainRules\" {})",
+      "Bash(find ~/.julia/packages/KernelFunctions* -name \"*.jl\")",
+      "Bash(ls -la /Users/gardnera/Documents/GitHub/ItsLive.jl/*.md)",
+      "Bash(tee /tmp/xmap_test_output.log)",
+      "Bash(tee /tmp/xmap_test2.log)",
+      "Bash(du -sh /Users/gardnera/Documents/GitHub/ItsLive.jl/notebooks/output_disagg_xmap.zarr_*)",
+      "Bash(tee /tmp/dual_output_test.log)",
+      "Bash(ls /Users/gardnera/Documents/GitHub/ItsLive.jl/notebooks/README_xmap*.md)",
+      "Bash(tee /tmp/xmap_improved_test.log)",
+      "Bash(xargs cat:*)",
+      "Bash(tee /tmp/xmap_threaded_test.log)",
+      "Bash(kill 49593)",
+      "Bash(ls:*)",
+      "Bash(tee /tmp/julia_output.log)",
+      "Bash(python3)",
+      "Bash(xargs -I {} cat {}/Package.toml)",
+      "Bash(find ~/.julia/registries -name \"Package.toml\" -path \"*/DiskArrayEngine/*\" -exec cat {} \\\\;)",
+      "Bash(tee /tmp/profile_output.txt)"
+    ]
+  }
+}
