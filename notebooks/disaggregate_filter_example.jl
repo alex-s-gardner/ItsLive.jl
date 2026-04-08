@@ -44,8 +44,12 @@ end
 
 # ── 3. Disaggregation configuration ─────────────────────────────────────────
 begin
-    output_period = Week(1)
-    loss_norm = :L1
+    output_period = Month(1)
+   
+    loss_norm      = TemporalDisaggregations.HuberLoss(1.35)
+    #loss_norm      = TemporalDisaggregations.L1DistLoss()
+    #loss_norm      = TemporalDisaggregations.L2DistLoss()
+
     sigma_buffer = 2
     time_buffer = Month(1)
     observation_error_minimum = 20 # m/yr
@@ -54,26 +58,26 @@ begin
     method_selection = :Spline
 
     if method_selection == :GP
-          # k =
-          #     10.0^2 * PeriodicKernel(r=[0.5]) * with_lengthscale(Matern52Kernel(), 0.3) +
-          #      50.0^2 * with_lengthscale(Matern52Kernel(), 3.0)
+           k =
+               5.0^2 * PeriodicKernel(r=[0.5]) * with_lengthscale(Matern52Kernel(), 0.3) +
+                50.0^2 * with_lengthscale(Matern52Kernel(), 3.0)
 
-            k = 100.0^2 * with_lengthscale(Matern52Kernel(), 3.0)
+           # k = 100.0^2 * with_lengthscale(Matern52Kernel(), 3.0)
 
             method = GP(
                 kernel=k,
-                obs_noise=0.1^2,
+                obs_noise=1.0 ^2,
             )
 
     elseif method_selection == :Spline
-        method = Spline(smoothness=1e-3, tension=1)
+        method = Spline(smoothness=0.25, tension=0.5)
     elseif method_selection == :Sinusoid
     method = Sinusoid()
     end
 end
 
-#for location in 1:5
-location = 5
+for location in 1:5
+#location = 5
 begin
     if location == 1
         latlon          = (60.2522, -141.1039)
@@ -104,7 +108,7 @@ begin
 end;
 
 # ── 4. Extract pixel data & apply filters ───────────────────────────────────
-#begin
+begin
     # extract raw pixel values and observation intervals
     vx_err = Float64.(collect(rs[:vx_error]))
     vy_err = Float64.(collect(rs[:vy_error]))
@@ -128,8 +132,9 @@ end;
     output_start = Date(2014,1,1) + time_buffer
     output_end = Date(maximum(skipmissing(t2))) - time_buffer
 
+
     # Coarse validity screen
-    @time vx_fit, vy_fit, valid_obs = ItsLive.disaggregate(method, vx, vy, vx_err, vy_err, t1, t2, sensor_group_id; output_start, output_end, output_period, loss_norm, sigma_buffer, time_buffer, verbose);
+    @time (vx_fit, vy_fit, valid_obs) = ItsLive.disaggregate(method, vx, vy, vx_err, vy_err, t1, t2, sensor_group_id; output_start, output_end, output_period, loss_norm, sigma_buffer, time_buffer, verbose=false, apply_redundancy_filter=false, irls_max_iter = 10, irls_tol = 1e-5);
 end;
 
 # ── 5. Figure — single-pixel: raw data, removed points, disaggregated signals
@@ -139,7 +144,5 @@ begin
         method, pt_name, latlon, detail_interval)
 
     display(fig1)
-    save(joinpath(@__DIR__, "pixel_disagg_comparison.png"), fig1, px_per_unit=2)
-    println("Saved: pixel_disagg_comparison.png")
 end
 end

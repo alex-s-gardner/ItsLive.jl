@@ -45,15 +45,14 @@ end
 
 # ── 3. Disaggregation configuration ─────────────────────────────────────────
 begin
-    output_period = Week(1)
-    loss_norm = :L1
-    sigma_buffer = 2
-    time_buffer = Month(1)
+    output_period   = Month(1)
+    loss_norm       = TemporalDisaggregations.L2DistLoss()
+    sigma_buffer    = 2
+    time_buffer     = Month(1)
+    verbose         = false
+    method          = Spline(smoothness=0.25, tension=0.5)
+
     observation_error_minimum = 20 # m/yr
-    verbose = false
-
-    method = Spline(smoothness=1e-3, tension=1)
-
 end
 
 
@@ -98,6 +97,12 @@ begin
     vx_err[vx_err .< observation_error_minimum] .= observation_error_minimum
     vy_err[vy_err .< observation_error_minimum] .= observation_error_minimum
 
+    vx_err = max.(vx_err, 1e-6)  # Replace zeros/negatives with minimum
+    vy_err = max.(vy_err, 1e-6)
+    vx_err = min.(vx_err, 1e6)  # Replace zeros/negatives with minimum
+    vy_err = min.(vy_err, 1e6)
+
+
     # sort data by ts
     sorted = true;
     if !issorted(t1)
@@ -115,15 +120,18 @@ begin
     output_start = Date(2014,1,1) + time_buffer
     output_end = Date(maximum(skipmissing(t2))) - time_buffer
 
+    output_start1 = output_start - time_buffer
+    output_end1 = output_end + time_buffer
+
     # Coarse validity screen
     time_output = output_start:output_period:output_end
-
-    m = length(time_output)
-    n, p,_ = size(rs[:vx])
 end;
 
 # degine output array
 begin
+    m = length(time_output)
+    n, p,_ = size(rs[:vx])
+
     x = X(dims(rs[:vx],:x).val.data);
     y = Y(dims(rs[:vx],:y).val.data);
     ti = Ti(time_output);
@@ -138,9 +146,8 @@ begin
 
 end;
 
-
-@showprogress desc = "Fitting splines to cube..." for i in eachindex(x)[162:end]
-#i = 258
+@showprogress desc = "Fitting splines to cube..." for i in eachindex(x)
+#i = 256
     # --------- Pre-load the full (y × time) slice into memory before the threaded loop.
     # X(i) is positional indexing (i-th element along x); avoids per-pixel Zarr reads
     # inside @threads and ensures each Zarr chunk is read at most once per x step.
@@ -149,39 +156,30 @@ end;
     # chunking is inefficient. In that case, consider reading smaller y-slices or individual 
     # pixels inside the loop, at the cost of more I/O.
 
-    vx_col = permutedims(collect(rs[:vx][x=i]))::Array{Union{Missing, Int16}, 2}  # (nt × ny): each column is one pixel's time series
-    vy_col = permutedims(collect(rs[:vy][x=i]))::Array{Union{Missing, Int16}, 2}
+   
+    vx_col = permutedims(map(x -> ismissing(x) ? NaN : Float64(x), rs[:vx][x=i]))
+    vy_col = all(ismissing.(vx_col)) ? continue : permutedims(map(x -> ismissing(x) ? NaN : Float64(x), rs[:vy][x=i]))
 
-    # Optional: filter observations by granule type
-    granule_url = collect(rs[:granule_url])
-    rslc = occursin.("RSLC", granule_url)
-    gslc = .!rslc
-    # use_index = gslc  # Uncomment to use only GSLC observations
-    use_index = trues(length(t1))  # Use all observations
+    Threads.@threads :greedy for j in eachindex(y)  # loop over y pixels; adjust range as needed for testing
+    #j = 270
+        all(isnan.(vy_col[:, j])) && continue  # skip if all vy values are missing (assumes vx is also missing, but check just in case)
 
-    # For single pixel testing, uncomment and set j:
-    j = 400
-    all(ismissing.(vy_col[:, j])) && error("All missing values at pixel j=$j")
+        try
+        
+            vx_fit, vy_fit, valid_obs = ItsLive.disaggregate(method, vx_col[:, j] ,vy_col[:, j], 
+                vx_err, vy_err, t1, t2, sensor_group_id; output_start, output_end, 
+                output_period, loss_norm, sigma_buffer, time_buffer, apply_redundancy_filter = false);
 
-    try
-        vx_fit, vy_fit, valid_obs = ItsLive.disaggregate(
-            method, vx_col[use_index, j], vy_col[use_index, j], vx_err[use_index], vy_err[use_index],
-            t1[use_index], t2[use_index], sensor_group_id[use_index];
-            output_start, output_end, output_period, loss_norm, sigma_buffer, time_buffer, verbose)
-
-        if !isnothing(vx_fit)
-            vx_out_data[:,i,j] = vx_fit.signal.data
-            vy_out_data[:,i,j] = vy_fit.signal.data
+            if !isnothing(vx_fit)
+                vx_out_data[:,i,j] = vx_fit.signal.data
+                vy_out_data[:,i,j] = vy_fit.signal.data
+            end
+        catch e
+            println("Error at pixel (x=$i; y=$j) ------------------------------------------")
+            rethrow(e)
         end
-    catch e
-        println("Error at pixel (x=$i; y=$j) ------------------------------------------")
-        rethrow(e)
     end
 end
-
-
-
-
 
 
 # ── 5. Figure — single-pixel: raw data, removed points, disaggregated signalbegin

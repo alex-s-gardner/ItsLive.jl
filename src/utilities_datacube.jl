@@ -456,125 +456,86 @@ end
 
 
 
-"""
-    disaggregate(method, vx, vy, vx_err, vy_err, t1, t2, sensor_group_id; kwargs...) -> (vx_fit, vy_fit, keep)
 
-Fit a temporal disaggregation model to per-pixel ITS_LIVE glacier velocity observations
-using a two-stage filtering + re-inclusion pipeline:
-
-**Stage 0 — coarse validity screen**
-Observations with `|vx| ≥ 20 000 m/yr` or `|vy| ≥ 200 000 m/yr`, or missing values,
-are discarded immediately.
-
-**Stage 1 — sensor-bias and dt-bias filters** 
-1. `sensor_bias_filter`: removes observations whose sensor group has a statistically
-   significant median offset relative to the Sentinel-2 reference group.
-2. `interval_bias_filter` (`dtbias_filter`): per sensor-group, finds the maximum
-   interval length whose median residual is consistent with the short-interval
-   observations; drops longer intervals.
-
-**Stage 2 — first fit** (corridor construction, `vx_fit1`/`vy_fit1`)
-`TemporalDisaggregations.disaggregate` is called on `keep` observations with
-`loss_norm`, extended by ±`time_buffer` beyond the requested output window.
-Observation weights `1/err` are used so that high-error observations receive lower
-weight (heteroscedastic noise), preventing sparse/poor-quality data from dominating
-the fit. The residual standard deviation of interval-averaged fit vs. observations
-is used to define a ±`sigma_buffer`·σ corridor around each component.
-
-**Stage 3 — corridor re-inclusion** 
-Every observation (including those removed by Stage 1) whose interval line segment
-intersects *both* the vx and vy corridors is re-included. This recovers long-dt
-observations that are geometrically consistent with the fit even if the dt-bias
-filter excluded them.
-
-**Stage 4 — final fit** (`vx_fit`/`vy_fit`)
-`TemporalDisaggregations.disaggregate` is called on `keep` with `weights = 1/err`,
-restricted to the requested output window. This is the returned result.
-
-# Arguments
-- `method`: disaggregation model (e.g. `Spline(...)`, `GP(...)`, `Sinusoid(...)`)
-- `vx`, `vy`: velocity components (m/yr), any `AbstractVector`
-- `vx_err`, `vy_err`: per-observation 1-σ errors (m/yr); must be positive
-- `t1`, `t2`: interval start/end dates (`AbstractVector{<:Dates.TimeType}`)
-- `sensor`: sensor label strings (used by `sensorgroup`)
-
-# Keyword Arguments
-- `output_start`: first output date; defaults to `minimum(t1)` of valid observations
-- `output_end`: last output date; defaults to `maximum(t2)` of valid observations
-- `output_period`: output sampling interval (default `Week(1)`)
-- `loss_norm`: `:L1` (robust, default) or `:L2`
-- `sigma_buffer`: corridor half-width in residual standard deviations (default `2`)
-- `time_buffer`: extra time prepended/appended for Stage 2 fit to reduce edge effects (default `Month(1)`)
-- `verbose`: print a filter-statistics table when `true` (default `false`)
-
-# Returns
-`(vx_fit, vy_fit, keep)` where `vx_fit` and `vy_fit` are `DimStack`s with
-`:signal` and `:std` layers on a `Ti` axis, and `keep` is a `BitVector` of length
-`length(vx)` indicating which original observations were used in the final fit.
-Returns `nothing` if fewer than 10 valid observations survive Stage 0.
-"""
 function disaggregate(method, vx, vy, vx_err, vy_err, t1, t2, sensor_group_id;
-                      output_start=nothing, output_end=nothing,
-                      output_period=Week(1), loss_norm=:L1,
-                      sigma_buffer=2, time_buffer=Month(1), verbose=false)
+    output_start=nothing, output_end=nothing,
+    output_period=Week(1), loss_norm=TemporalDisaggregations.HuberLoss(1.35),
+    sigma_buffer=2, time_buffer=Month(1), verbose=false,
+    # IRLS parameters
+    irls_max_iter::Int=50,
+    irls_tol::Float64=1e-8,
+    # Redundancy filtering parameters
+    apply_redundancy_filter=false,
+    redundancy_interval_bins::Union{Period,AbstractVector{<:Period}}=[Day(0), Day(16), Day(32), Day(64), Day(128), Day(256), Day(1E4)],
+    redundancy_temporal_overlap::Float64=0.5,
+    redundancy_bin_threshold::Union{Int, Vector{Int}}=20)
 
     # ── Stage 0: coarse validity screen ──────────────────────────────────────
-    valid_obs = (abs.(vx) .< 20000) .& (abs.(vy) .< 200000)
-    valid_obs = coalesce.(valid_obs, false)
-    # Explicit check for finite values to catch NaN/Inf
-    valid_obs = valid_obs .& isfinite.(vx) .& isfinite.(vy)
+
+    # Default output window to the span of valid observations (must happen before computing output_start1/output_end1)
+    isnothing(output_start) && (output_start = minimum(t1))
+    isnothing(output_end) && (output_end = maximum(t2))
+
+    # Ensure type consistency: if input times are DateTime, convert output times to DateTime
+    # This prevents type mismatch in TemporalDisaggregations._date_grid (especially for GP method)
+    if eltype(t1) <: DateTime
+        output_start = DateTime(output_start)
+        output_end = DateTime(output_end)
+    end
 
     output_start1 = output_start - time_buffer
     output_end1 = output_end + time_buffer
-    valid_obs = (t2 .>= output_start1) .& (t1 .<= output_end1) .& valid_obs
-    n_obs = sum(valid_obs)
 
-    vx     = Float64.(vx[valid_obs])
-    vy     = Float64.(vy[valid_obs])
+    # Fused broadcast for validity checks (reduces allocations)
+    valid_obs = @. (abs(vx) < 20000) & (abs(vy) < 200000) &
+                   isfinite(vx) & isfinite(vy) &
+                   (t2 >= output_start1) & (t1 <= output_end1)
+    valid_obs = coalesce.(valid_obs, false)  # Handle missing values
+    n_obs1 = sum(valid_obs)
+
+    vx = Float64.(vx[valid_obs])
+    vy = Float64.(vy[valid_obs])
     vx_err = Float64.(vx_err[valid_obs])
     vy_err = Float64.(vy_err[valid_obs])
-    t1     = t1[valid_obs]
-    t2     = t2[valid_obs]
+    t1 = t1[valid_obs]
+    t2 = t2[valid_obs]
     sensor_group_id = sensor_group_id[valid_obs]
 
     # Ensure error terms are finite and positive (prevents Inf from 1/err)
-    vx_err = max.(vx_err, 1e-6)  # Replace zeros/negatives with minimum
-    vy_err = max.(vy_err, 1e-6)
+    @. vx_err = max(vx_err, 1e-6)  # Replace zeros/negatives with minimum
+    @. vy_err = max(vy_err, 1e-6)
 
-    # Filter out non-finite errors
-    error_valid = isfinite.(vx_err) .& isfinite.(vy_err)
+    # Filter out non-finite errors (fused broadcast)
+    error_valid = @. isfinite(vx_err) & isfinite(vy_err)
     if !all(error_valid)
-        vx     = vx[error_valid]
-        vy     = vy[error_valid]
+        vx = vx[error_valid]
+        vy = vy[error_valid]
         vx_err = vx_err[error_valid]
         vy_err = vy_err[error_valid]
-        t1     = t1[error_valid]
-        t2     = t2[error_valid]
+        t1 = t1[error_valid]
+        t2 = t2[error_valid]
         sensor_group_id = sensor_group_id[error_valid]
     end
 
-    # Convert DateTime difference (milliseconds) to fractional days
-    interval_days = Float64.(Dates.value.(t2 .- t1)) ./ 86_400_000.0
+    # Convert DateTime difference (milliseconds) to fractional days (fused)
+    interval_days = @. Float64(Dates.value(t2 - t1)) / 86_400_000.0
     decyear_out = yeardecimal.(output_start1:output_period:output_end1)
 
-    # Default output window to the span of valid observations
-    isnothing(output_start) && (output_start = minimum(t1))
-    isnothing(output_end)   && (output_end   = maximum(t2))
 
     # ── Stage 1: sensor-bias  ────────────────────────────────────────────────
     keep = ItsLive.sensor_bias_filter(vx, vy, t1, t2, sensor_group_id)
-    n1 = sum(keep)
+    n_obs2 = sum(keep)
 
-    if n1 <= length(decyear_out)
-        verbose && @warn "Insufficient observations after sensor filtering: $n1 obs for $(length(decyear_out)) output times"
+    if n_obs2 <= length(decyear_out)
+        verbose && @warn "Insufficient observations after sensor filtering: $n_obs2 obs for $(length(decyear_out)) output times"
         return (nothing, nothing, nothing)
-    end 
+    end
 
     # ── Stage 2: interval-bias filters ───────────────────────────────────────
     keep[keep], _, _ = interval_bias_filter(
         vx[keep], vy[keep], interval_days[keep];
         sensor_group_id=sensor_group_id[keep])
-    n2 = sum(keep)
+    n_obs3 = sum(keep)
 
     # ── Validation: Check for finite values before fitting ──────────────────
     # Ensure all values are finite (no NaN/Inf)
@@ -596,30 +557,72 @@ function disaggregate(method, vx, vy, vx_err, vy_err, t1, t2, sensor_group_id;
 
     yr_t1 = yeardecimal.(t1)
     yr_t2 = yeardecimal.(t2)
-    obs_lines_vx = GI.Line.(eachrow(hcat(GI.Point.(yr_t1, vx), GI.Point.(yr_t2, vx))))
-    obs_lines_vy = GI.Line.(eachrow(hcat(GI.Point.(yr_t1, vy), GI.Point.(yr_t2, vy))))
+
+    # Pre-allocate geometry arrays (reduces allocations)
+    n_obs = length(yr_t1)
+    obs_lines_vx = Vector{GI.Line}(undef, n_obs)
+    obs_lines_vy = Vector{GI.Line}(undef, n_obs)
+    @inbounds for i in 1:n_obs
+        obs_lines_vx[i] = GI.Line([GI.Point(yr_t1[i], vx[i]), GI.Point(yr_t2[i], vx[i])])
+        obs_lines_vy[i] = GI.Line([GI.Point(yr_t1[i], vy[i]), GI.Point(yr_t2[i], vy[i])])
+    end
+
+
+    #TODO: impliment observation reduction by excluding redundent interval_values that have similar aquisition times and intervals.
+    
+    # ── Stage 0.5: redundancy reduction ──────────────────────────────────────
+    if apply_redundancy_filter
+        # filter is lightning fast
+
+        # Apply interval-stratified redundancy filter (from TemporalDisaggregations.jl)
+        keep_vx = copy(keep)
+        keep_vx[keep_vx] = TemporalDisaggregations.redundancy_filter(
+            vx_err[keep], t1[keep], t2[keep];
+            interval_bins=redundancy_interval_bins,
+            temporal_overlap=redundancy_temporal_overlap,
+            bin_count_threshold=redundancy_bin_threshold)
+
+        keep_vy = copy(keep)
+        keep_vy[keep] = TemporalDisaggregations.redundancy_filter(
+            vy_err[keep], t1[keep], t2[keep];
+            interval_bins=redundancy_interval_bins,
+            temporal_overlap=redundancy_temporal_overlap,
+            bin_count_threshold=redundancy_bin_threshold)
+
+        if verbose
+            pct_kept = round(100 * sum(keep_vx) / n_obs3, digits=1)
+            @info "Redundancy filter vx: kept $(sum(keep_vx)) / $n_obs3 observations ($pct_kept% retention)"
+
+            pct_kept = round(100 * sum(keep_vy) / n_obs3, digits=1)
+            @info "Redundancy filter vy: kept $(sum(keep_vy)) / $n_obs3 observations ($pct_kept% retention)"
+
+        end
+    else
+        keep_vx = keep
+        keep_vy = keep
+    end
 
     # Fit over extended window (±time_buffer) to reduce edge effects in the corridor.
     # Weights = 1/err give heteroscedastic noise so high-error obs have less influence.
     vx_fit1 = TemporalDisaggregations.disaggregate(
-        method, vx[keep], t1[keep], t2[keep];
+        method, vx[keep_vx], t1[keep_vx], t2[keep_vx];
         output_start=output_start1, output_end=output_end1,
-        output_period, loss_norm)
-   
-    vx_std  = std(TemporalDisaggregations.interval_average(vx_fit1, t1[keep], t2[keep]) .- vx[keep])
+        output_period, loss_norm, irls_max_iter, irls_tol)
+
+    vx_std = std(TemporalDisaggregations.interval_average(vx_fit1, t1[keep], t2[keep]) .- vx[keep])
     vx_line = GI.LineString(GI.Point.(decyear_out, vx_fit1.signal.data))
     vx_line_buff = ItsLive.buffer_unidirectional(vx_line, sigma_buffer * vx_std, dims=2)
     vx_intersects = GO.intersects.(Ref(vx_line_buff), obs_lines_vx)
 
     vy_fit1 = TemporalDisaggregations.disaggregate(
-        method, vy[keep], t1[keep], t2[keep];
+        method, vy[keep_vy], t1[keep_vy], t2[keep_vy];
         output_start=output_start1, output_end=output_end1,
-        output_period, loss_norm)
+        output_period, loss_norm, irls_max_iter, irls_tol)
 
     #valid_obs[valid_obs] = keep
     #return (vx_fit1, vy_fit1, valid_obs)
 
-    vy_std  = std(TemporalDisaggregations.interval_average(vy_fit1, t1[keep], t2[keep]) .- vy[keep])
+    vy_std = std(TemporalDisaggregations.interval_average(vy_fit1, t1[keep], t2[keep]) .- vy[keep])
     vy_line = GI.LineString(GI.Point.(decyear_out, vy_fit1.signal.data))
     vy_line_buff = ItsLive.buffer_unidirectional(vy_line, sigma_buffer * vy_std, dims=2)
     vy_intersects = GO.intersects.(Ref(vy_line_buff), obs_lines_vy)
@@ -628,27 +631,68 @@ function disaggregate(method, vx, vy, vx_err, vy_err, t1, t2, sensor_group_id;
     # Re-include any observation (even Stage-1 rejects) that intersects both corridors.
     keep = (vx_intersects .& vy_intersects)
 
+    # ── Stage 0.5: redundancy reduction ──────────────────────────────────────
+    if apply_redundancy_filter
+        # filter is lightning fast
+
+        # Apply interval-stratified redundancy filter (from TemporalDisaggregations.jl)
+        keep_vx = copy(keep)
+        keep_vx[keep_vx] = TemporalDisaggregations.redundancy_filter(
+            vx_err[keep], t1[keep], t2[keep];
+            interval_bins=redundancy_interval_bins,
+            temporal_overlap=redundancy_temporal_overlap,
+            bin_count_threshold=redundancy_bin_threshold)
+
+        keep_vy = copy(keep)
+        keep_vy[keep] = TemporalDisaggregations.redundancy_filter(
+            vy_err[keep], t1[keep], t2[keep];
+            interval_bins=redundancy_interval_bins,
+            temporal_overlap=redundancy_temporal_overlap,
+            bin_count_threshold=redundancy_bin_threshold)
+
+        if verbose
+            pct_kept = round(100 * sum(keep_vx) / n_obs3, digits=1)
+            @info "Redundancy filter vx: kept $(sum(keep_vx)) / $n_obs3 observations ($pct_kept% retention)"
+
+            pct_kept = round(100 * sum(keep_vy) / n_obs3, digits=1)
+            @info "Redundancy filter vy: kept $(sum(keep_vy)) / $n_obs3 observations ($pct_kept% retention)"
+
+        end
+    else
+        keep_vx = keep
+        keep_vy = keep
+    end
+
     # ── Stage 4: final fit on expanded observation set ───────────────────────
+    # Pre-allocate weight arrays (reduces allocations)
+    weights_vx = similar(vx_err, sum(keep_vx))
+    @inbounds @. weights_vx = 1 / vx_err[keep_vx]^2
+
+    weights_vy = similar(vy_err, sum(keep_vy))
+    @inbounds @. weights_vy = 1 / vy_err[keep_vy]^2
+
     vx_fit = TemporalDisaggregations.disaggregate(
-        method, vx[keep], t1[keep], t2[keep];
-        output_start, output_end, output_period, loss_norm, weights=(1 ./ vx_err[keep]))
+        method, vx[keep_vx], t1[keep_vx], t2[keep_vx];
+        output_start, output_end, output_period, loss_norm, irls_max_iter, irls_tol, weights=weights_vx)
+
     vy_fit = TemporalDisaggregations.disaggregate(
-        method, vy[keep], t1[keep], t2[keep];
-        output_start, output_end, output_period, loss_norm, weights=(1 ./ vy_err[keep]))
+        method, vy[keep_vy], t1[keep_vy], t2[keep_vy];
+        output_start, output_end, output_period, loss_norm, irls_max_iter, irls_tol, weights=weights_vy)
 
     # Map keep indices back to the original (pre-Stage-0) index space
     valid_obs[valid_obs] = keep
 
     if verbose
-        pct_sensor = round(Int, (n_obs-n1) / n_obs * 100)
-        pct_interval = round(Int, (n1 - n2) / n_obs * 100)
-        pct_sigma = -round(Int, (n2 - sum(keep)) / n_obs * 100)
+        pct_sensor = round(Int, (n_obs1 - n_obs2) / n_obs1 * 100)
+        pct_interval = round(Int, (n_obs2 - n_obs3) / n_obs1 * 100)
+        pct_sigma = -round(Int, (n_obs3 - sum(keep)) / n_obs1 * 100)
         println(rpad("Filter", 20), rpad("% removed", 10))
         println("-"^30)
-        println(rpad("sensor_bias", 20),   pct_sensor)
+        println(rpad("sensor_bias", 20), pct_sensor)
         println(rpad("interval_bias", 20), pct_interval)
         println(rpad("sigma_envelope", 20), pct_sigma)
-    end
+        println()
 
+    end
     return (vx_fit, vy_fit, valid_obs)
 end
